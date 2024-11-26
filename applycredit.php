@@ -30,7 +30,7 @@ if (!$user_info) {
 $user_id = $user_info['id'];
 $user_name = $user_info['name'];
 $user_address = $user_info['address'];
-$user_phone = $user_info['phone']; 
+$user_phone = $user_info['phone'];
 
 // 处理表单提交
 if (isset($_POST['submit'])) {
@@ -38,10 +38,8 @@ if (isset($_POST['submit'])) {
     $Address = $_POST['Address'] ?? null;
     $Phone = $_POST['Phone'] ?? null;
 
-    // 检查手机号是否为8位
-    if (strlen($Phone) != 8) {
-        echo "<script>alert('Phone number must be 8 digits in Hong Kong!');</script>";
-    } else {
+    // 检查手机号是否为11位
+    
         // 插入数据到 applycredit 表
         $sql = "INSERT INTO applycredit (status, name, address, phone, user_id) VALUES ('waiting', ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
@@ -57,7 +55,7 @@ if (isset($_POST['submit'])) {
         } else {
             echo "Error in SQL: " . $conn->error;
         }
-    }
+    
 }
 
 // 处理撤销申请
@@ -99,7 +97,7 @@ if ($stmt) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
-    <title>Apply for Credit Cards | GBC Internet Banking</title>
+    <title>Apply for Credit | GBC Internet Banking</title>
     <style>
         .form-container {
             max-width: 600px;
@@ -183,11 +181,11 @@ if ($stmt) {
     <header class="header">
         <div class="header__content">
             <div class="header__logo">
-            <a href="dashboard.php" style="text-decoration: none;">
-                <img src="./assets/logo.png" alt="Bank Logo">
-    </a>
+                <a href="dashboard.php" style="text-decoration: none;">
+                    <img src="./assets/logo.png" alt="Bank Logo">
+                </a>
             </div>
-            <h1>Apply for Credit Cards</h1>
+            <h1>Welcome to GBC Internet Banking</h1>
             <div class="header__right">
                 Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
                 <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
@@ -211,8 +209,6 @@ if ($stmt) {
                     <label for="Phone">Phone:</label>
                     <input type="tel" name="Phone" placeholder="Phone number" pattern="^\d{8}$" minlength="8" maxlength="8" value="<?php echo htmlspecialchars($user_phone); ?>" required>
                 </div>
-                The personal information you change here will NOT affect the information you have registered with the Bank. The above information will only be used for this credit card application.<br><br>
-                If you wish to update the personal information registered with the Bank, please click <a href="./uodate.php" class="quick-link-links">here</a>.<br><br>
                 <div class="form-group">
                     <input type="submit" name="submit" value="Submit">
                 </div>
@@ -238,12 +234,17 @@ if ($stmt) {
                                 <td>{$row['address']}</td>
                                 <td>{$row['phone']}</td>
                                 <td>{$row['status']}</td>
-                                <td>
-                                    <form method='post' action='' style='margin: 0;'>
-                                        <input type='hidden' name='apply_id' value='{$row['apply_id']}'>
-                                        <input type='submit' name='cancel' value='Cancel' class='cancel-button'>
-                                    </form>
-                                </td>
+                                <td>";
+                        // 检查状态，如果是 "waiting"，显示取消按钮，否则显示 "Complete"
+                        if ($row['status'] === 'waiting') {
+                            echo "<form method='post' action='' style='margin: 0;'>
+                                    <input type='hidden' name='apply_id' value='{$row['apply_id']}'>
+                                    <input type='submit' name='cancel' value='Cancel' class='cancel-button'>
+                                  </form>";
+                        } else {
+                            echo "<span style='color: gray;'>Complete</span>";
+                        }
+                        echo "</td>
                               </tr>";
                     }
                 } else {
