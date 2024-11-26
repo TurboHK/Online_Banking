@@ -39,9 +39,7 @@ if (isset($_POST['submit'])) {
     $Phone = $_POST['Phone'] ?? null;
 
     // 检查手机号是否为11位
-    if (strlen($Phone) != 11) {
-        echo "<script>alert('Phone number must be 11 digits!');</script>";
-    } else {
+    
         // 插入数据到 applycredit 表
         $sql = "INSERT INTO applycredit (status, name, address, phone, user_id) VALUES ('waiting', ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
@@ -57,7 +55,7 @@ if (isset($_POST['submit'])) {
         } else {
             echo "Error in SQL: " . $conn->error;
         }
-    }
+    
 }
 
 // 处理撤销申请
@@ -209,7 +207,7 @@ if ($stmt) {
                 </div>
                 <div class="form-group">
                     <label for="Phone">Phone:</label>
-                    <input type="tel" name="Phone" placeholder="Phone number" pattern="^\d{11}$" minlength="11" maxlength="11" value="<?php echo htmlspecialchars($user_phone); ?>" required>
+                    <input type="tel" name="Phone" placeholder="Phone number" pattern="^\d{8}$" minlength="8" maxlength="8" value="<?php echo htmlspecialchars($user_phone); ?>" required>
                 </div>
                 <div class="form-group">
                     <input type="submit" name="submit" value="Submit">
