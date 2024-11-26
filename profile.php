@@ -108,30 +108,11 @@ $stmt->close();
             </section>
 
         </div>
-
-        <!-- Quick Access Links -->
-        <section class="quick-links">
-            <div class="link">
-                <img src="./assets/icons/email.png"/>
-                <a href="./Change_Email.php" class="quick-link-links"><span>Update Username</span></a>
-            </div>
-            <div class="link">
-                <img src="./assets/icons/name.png"/>
-                <a href="./name.php" class="quick-link-links"><span>Edit Name</span></a>
-            </div>
-            <div class="link">
-                <img src="./assets/icons/address.png"/>
-                <a href="./address.php" class="quick-link-links"><span>Edit Address</span></a>
-            </div>
-            <div class="link">
-                <img src="./assets/icons/phone.png"/>
-                <a href="./phone.php" class="quick-link-links"><span>Edit Phone Number</span></a>
-            </div>
-            <div class="link">
-                <img src="./assets/icons/password.png"/>
-                <a href="./Change_Password.php" class="quick-link-links"><span>Update Password</span></a>
-            </div>
-        </section>
+        <div class="update-button-container">
+        <button onclick="window.location.href='update.php'">Update My Personal Information</button><br><br><br>
+        <button onclick="window.location.href='Change_Email.php'">Change My Email</button><br><br>
+        <button onclick="window.location.href='Change_Password.php'">Change My Password</button>
+    </div>
 
     </main>
 
@@ -140,6 +121,21 @@ $stmt->close();
     </footer>
 
     <style>
+        .update-button-container {
+        text-align: center; /* 居中按钮 */
+        margin: 20px 0; /* 按钮与其他内容的间距 */
+        }
+
+    .update-button-container button {
+        padding: 10px 20px;
+        background-color: #4BA247; /* 按钮背景颜色 */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
         .info-container {
             display: flex; /* 水平排列 */
             gap: 20px; /* 卡片之间的间距 */

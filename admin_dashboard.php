@@ -276,7 +276,7 @@ if (isset($_POST['delete_user'])) {
 
             <div class="link">
                 <img src="./assets/icons/application.png"/>
-                <a href="./Admin_Card_Management.php" class="quick-link-links"><span>Credit Card Application Management</span></a>
+                <a href="./Application_Management.php" class="quick-link-links"><span>Credit Card Application Management</span></a>
             </div>
 
             <div class="link">
