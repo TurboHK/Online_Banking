@@ -34,11 +34,11 @@ if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
         }
         $search_result = "<table class='result-table'><tr><th>Apply ID</th><th>User ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Status</th><th>Actions</th></tr>";
         foreach ($applycredits as $applycredit) {
-            // 如果status为waiting，显示reject和approve按钮
+            // 如果status为waiting，显示refuse和success按钮
             if ($applycredit['status'] == 'waiting') {
                 $actions = "<form method='POST' id='form_" . $applycredit['apply_id'] . "'>
-                    <button type='button' onclick='confirmAction(\"reject\", " . $applycredit['apply_id'] . ")'>Reject</button>
-                    <button type='button' onclick='confirmAction(\"approve\", " . $applycredit['apply_id'] . ")'>Approve</button>
+                    <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Refuse</button>
+                    <button type='button' onclick='confirmAction(\"success\", " . $applycredit['apply_id'] . ")'>Success</button>
                 </form>";
             } else {
                 $actions = "<span>Complete</span>";
@@ -81,11 +81,11 @@ if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
         }
         $search_result = "<table class='result-table'><tr><th>Apply ID</th><th>User ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Status</th><th>Actions</th></tr>";
         foreach ($applycredits as $applycredit) {
-            // 如果status为waiting，显示reject和approve按钮
+            // 如果status为waiting，显示refuse和success按钮
             if ($applycredit['status'] == 'waiting') {
                 $actions = "<form method='POST' id='form_" . $applycredit['apply_id'] . "'>
-                    <button type='button' onclick='confirmAction(\"reject\", " . $applycredit['apply_id'] . ")'>Reject</button>
-                    <button type='button' onclick='confirmAction(\"approve\", " . $applycredit['apply_id'] . ")'>Approve</button>
+                    <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Refuse</button>
+                    <button type='button' onclick='confirmAction(\"success\", " . $applycredit['apply_id'] . ")'>Success</button>
                 </form>";
             } else {
                 $actions = "<span>Complete</span>";
@@ -114,11 +114,11 @@ if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
 }
 
 // 处理拒绝操作
-if (isset($_POST['reject'])) {
-    $apply_id = $_POST['reject'];
+if (isset($_POST['refuse'])) {
+    $apply_id = $_POST['refuse'];
 
-    // 更新applycredit表的状态为reject
-    $stmt = $conn->prepare("UPDATE applycredit SET status = 'reject' WHERE apply_id = ?");
+    // 更新applycredit表的状态为refuse
+    $stmt = $conn->prepare("UPDATE applycredit SET status = 'refuse' WHERE apply_id = ?");
     $stmt->bind_param("i", $apply_id);
     $stmt->execute();
     $stmt->close();
@@ -129,11 +129,11 @@ if (isset($_POST['reject'])) {
 }
 
 // 处理成功操作
-if (isset($_POST['approve'])) {
-    $apply_id = $_POST['approve'];
+if (isset($_POST['success'])) {
+    $apply_id = $_POST['success'];
 
-    // 更新applycredit表的状态为approve
-    $stmt = $conn->prepare("UPDATE applycredit SET status = 'approve' WHERE apply_id = ?");
+    // 更新applycredit表的状态为success
+    $stmt = $conn->prepare("UPDATE applycredit SET status = 'success' WHERE apply_id = ?");
     $stmt->bind_param("i", $apply_id);
     $stmt->execute();
     
