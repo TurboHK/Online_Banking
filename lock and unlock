@@ -1,0 +1,182 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
+
+class User {
+    int userId;
+    String username;
+    boolean isAdmin;
+
+    User(int userId, String username, boolean isAdmin) {
+        this.userId = userId;
+        this.username = username;
+        this.isAdmin = isAdmin;
+    }
+}
+
+class Card {
+    int cardId;
+    int userId;
+    String cardType; // "Savings" or "Credit"
+    String status; // "Active" or "Frozen"
+
+    Card(int cardId, int userId, String cardType, String status) {
+        this.cardId = cardId;
+        this.userId = userId;
+        this.cardType = cardType;
+        this.status = status;
+    }
+}
+
+public class OnlineBankingSystem {
+    private static HashMap<Integer, User> users = new HashMap<>();
+    private static HashMap<Integer, Card> cards = new HashMap<>();
+    private static int nextCardId = 1;
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        // Initialize data
+        initializeData();
+
+        System.out.println("Welcome to the Online Banking System!");
+
+        // Simulate the banking system
+        while (true) {
+            System.out.print("\nEnter your username to log in: ");
+            String username = scanner.nextLine();
+            User loggedInUser = login(username);
+
+            if (loggedInUser == null) {
+                System.out.println("Invalid username. Please try again.");
+                continue;
+            }
+
+            if (loggedInUser.isAdmin) {
+                adminInterface(loggedInUser);
+            } else {
+                userInterface(loggedInUser);
+            }
+        }
+    }
+
+    private static void initializeData() {
+        // Add users
+        users.put(1, new User(1, "user1", false));
+        users.put(2, new User(2, "user2", false));
+        users.put(3, new User(3, "admin", true));
+
+        // Add cards
+        cards.put(nextCardId, new Card(nextCardId++, 1, "Savings", "Active"));
+        cards.put(nextCardId, new Card(nextCardId++, 1, "Credit", "Active"));
+        cards.put(nextCardId, new Card(nextCardId++, 2, "Savings", "Frozen"));
+        cards.put(nextCardId, new Card(nextCardId++, 2, "Credit", "Active"));
+    }
+
+    private static User login(String username) {
+        for (User user : users.values()) {
+            if (user.username.equals(username)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    private static void userInterface(User user) {
+        System.out.println("Welcome, " + user.username + "!");
+        while (true) {
+            System.out.println("\nOptions:");
+            System.out.println("1. View your cards");
+            System.out.println("2. Freeze or unlock a card");
+            System.out.println("0. Logout");
+
+            System.out.print("Enter your choice: ");
+            int choice = Integer.parseInt(scanner.nextLine());
+
+            switch (choice) {
+                case 1:
+                    viewUserCards(user.userId);
+                    break;
+                case 2:
+                    manageCard(user.userId, false);
+                    break;
+                case 0:
+                    System.out.println("Logging out...");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private static void adminInterface(User admin) {
+        System.out.println("Welcome, Admin!");
+        while (true) {
+            System.out.println("\nOptions:");
+            System.out.println("1. View and manage user cards");
+            System.out.println("0. Logout");
+
+            System.out.print("Enter your choice: ");
+            int choice = Integer.parseInt(scanner.nextLine());
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter the username of the user to manage: ");
+                    String targetUsername = scanner.nextLine();
+                    User targetUser = null;
+                    for (User user : users.values()) {
+                        if (user.username.equals(targetUsername)) {
+                            targetUser = user;
+                            break;
+                        }
+                    }
+
+                    if (targetUser == null) {
+                        System.out.println("User not found.");
+                    } else {
+                        viewUserCards(targetUser.userId);
+                        manageCard(targetUser.userId, true);
+                    }
+                    break;
+                case 0:
+                    System.out.println("Logging out...");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private static void viewUserCards(int userId) {
+        System.out.println("\nCards for User ID " + userId + ":");
+        for (Card card : cards.values()) {
+            if (card.userId == userId) {
+                System.out.println("Card ID: " + card.cardId + ", Type: " + card.cardType + ", Status: " + card.status);
+            }
+        }
+    }
+
+    private static void manageCard(int userId, boolean isAdmin) {
+        System.out.print("\nEnter the Card ID to manage: ");
+        int cardId = Integer.parseInt(scanner.nextLine());
+
+        Card card = cards.get(cardId);
+        if (card == null || (!isAdmin && card.userId != userId)) {
+            System.out.println("Invalid Card ID or insufficient permissions.");
+            return;
+        }
+
+        System.out.print("Enter 'freeze' to freeze or 'unlock' to unlock: ");
+        String action = scanner.nextLine().toLowerCase();
+
+        if (action.equals("freeze") && card.status.equals("Active")) {
+            card.status = "Frozen";
+            System.out.println("Card " + cardId + " has been frozen.");
+        } else if (action.equals("unlock") && card.status.equals("Frozen")) {
+            card.status = "Active";
+            System.out.println("Card " + cardId + " has been unlocked.");
+        } else {
+            System.out.println("Invalid action or the card is already " + card.status + ".");
+        }
+    }
+}
