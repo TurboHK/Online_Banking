@@ -24,7 +24,7 @@
 
     <main class="dashboard">
         <div class="info-container">
-            <!-- 左侧卡片 -->
+            <!-- left card -->
             <section class="account-summary">
                 <h2>Overview</h2>
                 <form action="" method="POST" class="update-form">
@@ -51,7 +51,7 @@
                         </div>
                         <div class="sub-account">
                             <label for="phone">Phone Number:</label>
-                            <input type="tel" id="phone" name="phone" value="" required>
+                            <input type="tel" id="phone" name="phone" value="" pattern="^\d{8}$" minlength="8" required>
                         </div>
                     </div>
                     <div class="submit-button-container">
@@ -72,30 +72,30 @@
     </footer>
 
     <style>
-         /* 使表单居中并设置适当的宽度 */
+
         .dashboard {
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 垂直方向上让表单靠上 */
-            min-height: 100vh; /* 让页面内容垂直居中 */
+            align-items: flex-start; 
+            min-height: 100vh; 
             background-color: #f7f7f7;
-            padding-top: 50px; /* 给表单顶部留出空隙 */
+            padding-top: 50px; 
         }
         
         .info-container {
             width: 100%;
-            max-width: 500px; /* 设置最大宽度为500px，使表单更紧凑 */
+            max-width: 500px; 
             padding: 20px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-top: 30px; /* 上移表单 */
+            margin-top: 30px;
         }
         
         .update-form {
             display: flex;
             flex-direction: column;
-            gap: 15px; /* 每个输入框的间距 */
+            gap: 15px;
         }
         
         .sub-account label {
@@ -106,13 +106,13 @@
         }
         
         .sub-account input {
-            width: 50%; /* 输入框宽度为100% */
-            max-width: 400px; /* 设置输入框的最大宽度为400px */
-            padding: 8px; /* 减少内边距 */
-            font-size: 14px; /* 缩小字体大小 */
+            width: 50%; 
+            max-width: 400px; 
+            padding: 8px; 
+            font-size: 14px; 
             border: 1px solid #ccc;
             border-radius: 5px;
-            margin-bottom: 10px; /* 增加输入框之间的间距 */
+            margin-bottom: 10px; 
         }
         
         .submit-button-container {
