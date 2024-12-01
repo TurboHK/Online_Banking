@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Limit Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .result {
+            text-align: center;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .search-result {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Credit Card Limit Management</h1>
+
+    <!-- Step 1: Search for Card -->
+    <div id="search-section">
+        <h2>Search Card</h2>
+        <form id="search-form" onsubmit="searchCard(event)">
+            <div class="form-group">
+                <label for="searchInput">Search by Card Number, User ID, or Cardholder Name</label>
+                <input type="text" id="searchInput" name="searchInput" placeholder="Enter Card Number, User ID, or Name" required>
+            </div>
+            <button type="submit" class="btn">Search</button>
+        </form>
+    </div>
+
+    <!-- Step 2: Display Card Information and Operations -->
+    <div id="operation-section" class="search-result">
+        <h2>Card Details</h2>
+        <form id="edit-form" onsubmit="updateLimit(event)">
+            <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input type="text" id="cardNumber" name="cardNumber" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="cardHolder">Cardholder Name</label>
+                <input type="text" id="cardHolder" name="cardHolder" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="currentLimit">Current Limit</label>
+                <input type="text" id="currentLimit" name="currentLimit" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="newLimit">New Limit</label>
+                <input type="number" id="newLimit" name="newLimit" min="1000" max="50000" placeholder="Enter New Limit" required>
+            </div>
+
+            <div class="form-group">
+                <label for="maxLimit">Maximum Limit</label>
+                <input type="text" id="maxLimit" name="maxLimit" disabled>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn">Confirm Change</button>
+                <button type="button" class="btn" onclick="alert('Unfreeze functionality not implemented');">Unfreeze</button>
+                <button type="button" class="btn" onclick="alert('Unlock functionality not implemented');">Unlock</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Simulating database call: Replace with actual API request in a real application
+const cardData = [
+    { cardNumber: "1234 5678 9876 5432", cardHolder: "John Doe", currentLimit: 5000, maxLimit: 50000 },
+    { cardNumber: "1111 2222 3333 4444", cardHolder: "Alice Smith", currentLimit: 10000, maxLimit: 30000 },
+    { cardNumber: "5555 6666 7777 8888", cardHolder: "Bob Johnson", currentLimit: 20000, maxLimit: 40000 },
+];
+
+function searchCard(event) {
+    event.preventDefault();  // Prevent form submission
+
+    const searchInput = document.getElementById('searchInput').value.trim().toLowerCase();
+    let cardFound = false;
+
+    // Look for a match in cardData (based on card number, cardholder name, or user ID)
+    for (let i = 0; i < cardData.length; i++) {
+        const card = cardData[i];
+        if (card.cardNumber.includes(searchInput) || card.cardHolder.toLowerCase().includes(searchInput)) {
+            // Card found, populate the form fields and show operation section
+            document.getElementById('cardNumber').value = card.cardNumber;
+            document.getElementById('cardHolder').value = card.cardHolder;
+            document.getElementById('currentLimit').value = card.currentLimit;
+            document.getElementById('maxLimit').value = card.maxLimit;
+
+            // Hide the search section and show the operation section
+            document.getElementById('search-section').style.display = 'none';
+            document.getElementById('operation-section').style.display = 'block';
+            cardFound = true;
+            break;
+        }
+    }
+
+    if (!cardFound) {
+        alert("Card not found!");
+    }
+}
+
+// Simulate updating the card limit (replace with actual backend call)
+function updateLimit(event) {
+    event.preventDefault();  // Prevent form submission
+
+    const cardNumber = document.getElementById('cardNumber').value;
+    const newLimit = document.getElementById('newLimit').value;
+
+    if (newLimit) {
+        // Simulate the update (in reality, send the data to your backend)
+        alert(`Card ${cardNumber} limit has been updated to $${newLimit}.`);
+        // You would also update the card data in your backend here
+    } else {
+        alert("Please enter a valid new limit.");
+    }
+}
+</script>
+
+</body>
+</html>

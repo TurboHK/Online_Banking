@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="text"],
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination button {
+            padding: 5px 15px;
+            margin: 0 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .pagination button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Transaction History</h1>
+
+    <!-- Filter Section -->
+    <div>
+        <h2>Filter Transactions</h2>
+        <form id="filter-form" onsubmit="filterTransactions(event)">
+            <div class="form-group">
+                <label for="cardFilter">Filter by Card Number</label>
+                <input type="text" id="cardFilter" placeholder="Enter Card Number">
+            </div>
+
+            <div class="form-group">
+                <label for="dateFilter">Filter by Date</label>
+                <input type="date" id="dateFilter">
+            </div>
+
+            <div class="form-group">
+                <label for="amountFilter">Filter by Amount</label>
+                <input type="number" id="amountFilter" placeholder="Enter Amount">
+            </div>
+
+            <button type="submit" class="btn">Apply Filters</button>
+        </form>
+    </div>
+
+    <!-- Transaction List -->
+    <h2>Recent Transactions</h2>
+    <table id="transaction-table">
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Card Number</th>
+                <th>Transaction Date</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Transaction rows will be populated by JavaScript -->
+        </tbody>
+    </table>
+
+    <!-- Pagination Section -->
+    <div class="pagination" id="pagination">
+        <!-- Pagination buttons will be generated dynamically -->
+    </div>
+</div>
+
+<script>
+// Placeholder data structure: In practice, data would come from backend
+let currentPage = 1;
+const transactionsPerPage = 5; // For example, display 5 transactions per page
+
+// Sample data (replace with actual data from your backend)
+const allTransactions = [
+    { id: 1, cardNumber: '1234 5678 9876 5432', date: '2024-11-01', amount: 100 },
+    { id: 2, cardNumber: '1111 2222 3333 4444', date: '2024-10-28', amount: 200 },
+    { id: 3, cardNumber: '1234 5678 9876 5432', date: '2024-11-02', amount: 150 },
+    { id: 4, cardNumber: '5555 6666 7777 8888', date: '2024-11-05', amount: 500 },
+    { id: 5, cardNumber: '1234 5678 9876 5432', date: '2024-11-06', amount: 300 },
+    { id: 6, cardNumber: '1234 5678 9876 5432', date: '2024-11-07', amount: 120 },
+    { id: 7, cardNumber: '1111 2222 3333 4444', date: '2024-11-08', amount: 450 },
+    { id: 8, cardNumber: '5555 6666 7777 8888', date: '2024-11-09', amount: 230 },
+    { id: 9, cardNumber: '1234 5678 9876 5432', date: '2024-11-10', amount: 170 },
+    { id: 10, cardNumber: '1111 2222 3333 4444', date: '2024-11-11', amount: 380 },
+    // More sample transactions...
+];
+
+// Function to render transactions
+function renderTransactions(transactionsToRender) {
+    const tableBody = document.querySelector('#transaction-table tbody');
+    tableBody.innerHTML = ''; // Clear existing rows
+
+    transactionsToRender.forEach(transaction => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${transaction.id}</td>
+            <td>${transaction.cardNumber}</td>
+            <td>${transaction.date}</td>
+            <td>$${transaction.amount}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Function to handle pagination
+function renderPagination(totalTransactions) {
+    const totalPages = Math.ceil(totalTransactions / transactionsPerPage);
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = ''; // Clear existing pagination
+
+    for (let i = 1; i <= totalPages; i++) {
+        const button = document.createElement('button');
+        button.textContent = i;
+        button.onclick = () => goToPage(i);
+        pagination.appendChild(button);
+    }
+}
+
+// Function to go to the selected page
+function goToPage(page) {
+    currentPage = page;
+    const start = (currentPage - 1) * transactionsPerPage;
+    const end = start + transactionsPerPage;
+    const transactionsToDisplay = allTransactions.slice(start, end);
+    renderTransactions(transactionsToDisplay);
+    renderPagination(allTransactions.length);
+}
+
+// Function to filter transactions based on user input
+function filterTransactions(event) {
+    event.preventDefault(); // Prevent form submission
+
+    const cardFilter = document.getElementById('cardFilter').value.trim().toLowerCase();
+    const dateFilter = document.getElementById('dateFilter').value;
+    const amountFilter = document.getElementById('amountFilter').value;
+
+    const filteredTransactions = allTransactions.filter(transaction => {
+        const matchesCard = !cardFilter || transaction.cardNumber.includes(cardFilter);
+        const matchesDate = !dateFilter || transaction.date === dateFilter;
+        const matchesAmount = !amountFilter || transaction.amount == amountFilter;
+
+        return matchesCard && matchesDate && matchesAmount;
+    });
+
+    renderTransactions(filteredTransactions.slice(0, transactionsPerPage));
+    renderPagination(filteredTransactions.length);
+}
+
+// Initially render all transactions and pagination
+goToPage(1);
+
+</script>
+
+</body>
+</html>
+
