@@ -1,3 +1,6 @@
+permissions:
+  contents: write
+
 name: Deploy Pure HTML to GitHub Pages
 
 on:
