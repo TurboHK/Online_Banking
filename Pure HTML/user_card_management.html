@@ -6,81 +6,6 @@
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
     <title>My Cards | GBC Internet Banking</title>
-    <style>
-        .container {
-            width: 80%;
-            margin: 120px auto 20px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .filter-buttons {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .filter-buttons button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 10px;
-        }
-        .filter-buttons button:hover {
-            background-color: #45a049;
-        }
-        .search-container {
-            text-align: center;
-            margin: 20px auto;
-        }
-        .search-container input {
-            width: 60%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .card-list {
-            max-width: 800px;
-            margin: 20px auto;
-            text-align: left;
-        }
-        .card-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-        }
-        .card-item .details-button {
-            padding: 5px 10px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .card-item .details-button:hover {
-            background-color: #0056b3;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            text-decoration: none;
-            color: #0064d2;
-        }
-
-    </style>
 </head>
 <body>
     <!-- Header -->
@@ -119,7 +44,7 @@
     </div>
 
     <div class="back-link">
-        <p><a href="javascript:history.back()">Return to the previous page</a></p>
+        <p><a href="./dashboard.html">Return to the Dashboard</a></p>
     </div>
     
     <!-- Footer -->
@@ -171,5 +96,81 @@
         // Load all cards on page load
         window.onload = () => filterCards('all');
     </script>
+
+<style>
+    .container {
+        width: 80%;
+        margin: 120px auto 20px;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .filter-buttons button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0 10px;
+    }
+    .filter-buttons button:hover {
+        background-color: #45a049;
+    }
+    .search-container {
+        text-align: center;
+        margin: 20px auto;
+    }
+    .search-container input {
+        width: 60%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .card-list {
+        max-width: 800px;
+        margin: 20px auto;
+        text-align: left;
+    }
+    .card-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #fff;
+    }
+    .card-item .details-button {
+        padding: 5px 10px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .card-item .details-button:hover {
+        background-color: #0056b3;
+    }
+
+    .back-link {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .back-link a {
+        text-decoration: none;
+        color: #0064d2;
+    }
+
+</style>
 </body>
 </html>

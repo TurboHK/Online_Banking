@@ -6,64 +6,6 @@
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
     <title>Admin Card Management</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
-        .container {
-            width: 80%;
-            margin: 120px auto 20px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h1, h2 {
-            text-align: center;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: block;
-        }
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .btn:hover {
-            background-color: #45a049;
-        }
-
-        footer {
-            text-align: center;
-            padding: 10px 0;
-            background-color: #f4f4f4;
-            color: #333;
-            margin-top: 20px;
-        }
-        .header h1{
-            text-align: center;
-            color: white;
-        }
-    </style>
 </head>
 <body>
     <!-- Header -->
@@ -72,7 +14,7 @@
             <div class="header__logo">
                 <a href="./admin_dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>Welcome to GBC Internet Banking</h1>
+            <h1>Admin Card Management</h1>
             <div class="header__right">
                 Current User: Sengokuran
                 <button class="logout-button" onclick="window.location.href='index.html'">Logout</button>
@@ -81,7 +23,6 @@
     </header>
 
     <div class="container" style="margin-top: 150px;">
-        <h1>Admin Card Management</h1>
 
         <!-- Search and Edit Section -->
         <div id="search-section">
@@ -126,6 +67,10 @@
                 <button class="btn" style="background-color: blue;" onclick="unlockCard()">Unlock Card</button>
             </div>
         </div>
+    </div>
+
+    <div class="back-link">
+        <p><a href="javascript:history.back()">Return to the previous page</a></p>
     </div>
 
     <!-- Footer -->
@@ -182,5 +127,75 @@
             alert(`Card ${cardNumber} has been unlocked.`);
         }
     </script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+    }
+    .container {
+        width: 80%;
+        margin: 120px auto 20px;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+        text-align: center;
+        color: #333;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+    }
+    input[type="text"], input[type="number"], select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .btn {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+    .btn:hover {
+        background-color: #45a049;
+    }
+
+    footer {
+        text-align: center;
+        padding: 10px 0;
+        background-color: #f4f4f4;
+        color: #333;
+        margin-top: 20px;
+    }
+    .header h1{
+        text-align: center;
+        color: white;
+    }
+    
+    .back-link {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .back-link a {
+        text-decoration: none;
+        color: #0064d2;
+    }
+</style>
+
 </body>
 </html>
