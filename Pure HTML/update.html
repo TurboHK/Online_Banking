@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/dashboard.css" />
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <title>Personal Information Update| GBC Internet Banking</title>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__content">
+            <div class="header__logo">
+                <a href="./dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
+            </div>
+            <h1>Personal Information Update</h1>
+            <div class="header__right">
+                Current User: Sengokuran
+                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='index.html'">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <div class="info-container">
+            <!-- 左侧卡片 -->
+            <section class="account-summary">
+                <h2>Overview</h2>
+                <form action="" method="POST" class="update-form">
+                    <div class="sub-accounts">
+                        <div class="sub-account">
+                            <label for="username">Username: Sengokuran<br></label>
+                            <span class="balance"></span>
+                        </div>
+                        <div class="sub-account">
+                            <label for="user_id">User ID: 30418</label>
+                            <span class="balance"></span>
+                        </div>
+                        <div class="sub-account">
+                            <label for="created_at">Valued customer since: 2006/11/23</label>
+                            <span class="balance"></span>
+                        </div>
+                        <div class="sub-account">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name" name="name" value="" required>
+                        </div>
+                        <div class="sub-account">
+                            <label for="address">Address:</label>
+                            <input type="text" id="address" name="address" value="" required>
+                        </div>
+                        <div class="sub-account">
+                            <label for="phone">Phone Number:</label>
+                            <input type="tel" id="phone" name="phone" value="" required>
+                        </div>
+                    </div>
+                    <div class="submit-button-container">
+                        <button type="submit" id="loginButton">Update</button>
+                    </div>
+                </form>
+            </section>
+
+            <div class="back-link">
+                <p><a href="javascript:history.back()">Return to the previous page</a></p>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+    </footer>
+
+    <style>
+         /* 使表单居中并设置适当的宽度 */
+        .dashboard {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 垂直方向上让表单靠上 */
+            min-height: 100vh; /* 让页面内容垂直居中 */
+            background-color: #f7f7f7;
+            padding-top: 50px; /* 给表单顶部留出空隙 */
+        }
+        
+        .info-container {
+            width: 100%;
+            max-width: 500px; /* 设置最大宽度为500px，使表单更紧凑 */
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 30px; /* 上移表单 */
+        }
+        
+        .update-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* 每个输入框的间距 */
+        }
+        
+        .sub-account label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .sub-account input {
+            width: 50%; /* 输入框宽度为100% */
+            max-width: 400px; /* 设置输入框的最大宽度为400px */
+            padding: 8px; /* 减少内边距 */
+            font-size: 14px; /* 缩小字体大小 */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px; /* 增加输入框之间的间距 */
+        }
+        
+        .submit-button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .submit-button-container button {
+            padding: 10px 20px;
+            background-color: #4BA247;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .submit-button-container button:hover {
+            background-color: #3D8C3A;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            text-decoration: none;
+            color: #0064d2;
+        }
+
+    </style>
+</body>
+</html>
+<script>
+  const loginButton = document.getElementById("loginButton");
+  loginButton.addEventListener("click", function (){
+    alert("Information updated successfully.");
+    window.location.href = "profile.html";  
+  });
+</script>

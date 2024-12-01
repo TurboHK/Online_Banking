@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/dashboard.css" />
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <title>Personal Information | GBC Internet Banking</title>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__content">
+            <div class="header__logo">
+                <a href="./dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
+            </div>
+            <h1>Personal Information</h1>
+            <div class="header__right">
+                User name: Sengokuran
+                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='index.html'">Logout</button>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <div class="info-container">
+            <section class="account-summary">
+                <h2>Overview</h2>
+                <div class="sub-accounts">
+                    <div class="sub-account">
+                        <span>Username:</span>
+                        <span class="balance">Sengokuran</span>
+                    </div>
+                    <div class="sub-account">
+                        <span>User ID:</span>
+                        <span class="balance">30418</span>
+                    </div>
+                    <div class="sub-account">
+                        <span>Valued customer since:</span>
+                        <span class="balance">2006/11/23</span>
+                    </div>
+                    <div class="sub-account">
+                        <span>Name:</span>
+                        <span class="balance">WanXu</span>
+                    </div>
+                    <div class="sub-account">
+                        <span>Address</span>
+                        <span class="balance">xxxx</span>
+                    </div>
+                    <div class="sub-account">
+                        <span>Phone Number</span>
+                        <span class="balance">11011011011</span>
+                    </div>
+                </div>
+            </section>
+            <section class="account-summary">
+                <h2>Profile Picture</h2>
+                <div class="account">
+                        No profile picture uploaded.<br><br>Consider uploading one to make your profile unique!<br><br>
+                    <form enctype="multipart/form-data" class="upload-form">
+                        <input type="file" name="profile_picture" accept="image/*" required>
+                        <button type="submit">Update Picture</button>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+        <div class="update-button-container">
+        <button onclick="window.location.href='update.html'">Update My Personal Information</button><br><br><br>
+        <button onclick="window.location.href='Change_Email.html'">Change My Email</button><br><br>
+        <button onclick="window.location.href='Change_Password.html'">Change My Password</button>
+    </div>
+
+    </main>
+
+    <footer class="footer">
+        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+    </footer>
+
+    <style>
+        .update-button-container {
+        text-align: center; 
+        margin: 20px 0; 
+        }
+
+    .update-button-container button {
+        padding: 10px 20px;
+        background-color: #4BA247; 
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+        .info-container {
+            display: flex; 
+            gap: 20px; 
+        }
+
+        .account-summary {
+            background-color: #f7f7f7;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%; 
+        }
+
+        .account-summary:nth-child(2) {
+            width: 20%; 
+        }
+
+        .account {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .profile-picture {
+            width: 100%; 
+            max-width: 200px; 
+            border-radius: 10px;
+            margin-bottom: 15px; 
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+        }
+        
+        .upload-form input[type="file"] {
+            margin-bottom: 10px; 
+        }
+        
+        .upload-form button {
+            padding: 10px 20px;
+            background-color: #123362;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .upload-form button:hover {
+            background-color: #0a254a; 
+        }
+        
+    </style>

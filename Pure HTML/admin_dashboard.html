@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/dashboard.css" />
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <title>Dashboard | GBC Internet Banking</title>
+    <style>
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .account-summary {
+            flex: 0 0 49%; /* Each section takes up 49% of the width */
+            margin-right: 2%; /* Add some spacing */
+        }
+
+        .account-summary:last-child {
+            margin-right: 0; /* The last element does not need right spacing */
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__content">
+            <div class="header__logo">
+                <a href="./admin_dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
+            </div>
+            <h1>Welcome to GBC Internet Banking Control Panel</h1>
+            <div class="header__right">
+                Current Administrator: Sengokuran
+                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='index.html'">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard">
+        <div class="flex-container">
+            <section class="account-summary">
+                <h2>User Overview</h2>
+                <div class="account">
+                    <h3>Total User Number</h3>
+                    <div class="account-balance">150</div> <!-- Example data -->
+                </div>
+                <div class="sub-accounts">
+                    <div class="sub-account">
+                        <span>Users</span>
+                        <span class="balance">120</span> <!-- Example data -->
+                    </div>
+                    <div class="sub-account">
+                        <span>Administrators</span>
+                        <span class="balance">30</span> <!-- Example data -->
+                    </div>
+                </div>
+            </section>
+
+            <section class="account-summary">
+                <h2>Database Server Overview</h2>
+                <div class="account">
+                    <h3>Current User</h3>
+                    <span class="account-number">localhost via TCP/IP</span>
+                    <div class="account-balance">admin_user@localhost</div>
+                </div>
+                <div class="sub-accounts">
+                    <div class="sub-account">
+                        <span>Server Type</span>
+                        <span class="balance">MariaDB</span>
+                    </div>
+                    <div class="sub-account">
+                        <span>Character Set</span>
+                        <span class="balance">utf8mb4</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- User Search Section -->
+        <section class="user-search">
+            <h2>User Management</h2>
+            <form method="post" action="">
+                <input type="text" name="username" id="username" value="ExampleUser" required>
+                <input type="submit" name="search" value="Search">
+                <input type="submit" name="clear" value="Clear">
+            </form>
+
+            <div>
+                <p>Search executed in <span>15.24</span> milliseconds.</p><br>
+                <table border="1">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Registration Time</th>
+                        <th>Operations</th>
+                    </tr>
+                    <tr>
+                        <td>30418</td>
+                        <td>Sengokuran</td>
+                        <td>user</td>
+                        <td>2024-01-01 12:00:00</td>
+                        <td>
+                            <form method="post" action="" style="display:inline;">
+                                <input type="hidden" name="username" value="ExampleUser">
+                                <input type="submit" name="reset_password" value="Reset password">
+                            </form>
+                            <form method="post" action="" style="display:inline;">
+                                <input type="hidden" name="username" value="ExampleUser">
+                                <input type="submit" name="delete_user" value="Delete user" onclick="return confirm('Are you sure to delete the user?');">
+                            </form>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <!-- Quick Access Links -->
+        <section class="quick-links">
+            <div class="link">
+                <img src="./assets/icons/card_management.png"/>
+                <a href="./admin_Card_Management.html" class="quick-link-links"><span>Card Management</span></a>
+            </div>
+
+            <div class="link">
+                <img src="./assets/icons/application.png"/>
+                <a href="./Application_Management.html" class="quick-link-links"><span>Credit Card Application Management</span></a>
+            </div>
+
+            <div class="link">
+                <img src="./assets/icons/email.png"/>
+                <a href="./Change_Email.html" class="quick-link-links"><span>Update Email Address</span></a>
+            </div>
+            
+            <div class="link">
+                <img src="./assets/icons/password.png"/>
+                <a href="./Change_Password.html" class="quick-link-links"><span>Update Password</span></a>
+            </div>
+
+            <div class="link">
+                <img src="./assets/icons/credit.png"/>
+                <a href="./admin_edit_credit_limit.html" class="quick-link-links"><span>Card Management</span></a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+    </footer>
+</body>
+</html>
