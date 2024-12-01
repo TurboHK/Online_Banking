@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
-    <title>User Card Management</title>
+    <title>Manage Cards | GBC Internet Banking</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
         .container {
             width: 80%;
             margin: 120px auto 20px;
@@ -15,23 +21,22 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        #l{
+        h1, h2 {
             text-align: center;
             color: #333;
         }
         .form-group {
             margin-bottom: 15px;
+            text-align: left;
+            max-width: 600px;
+            margin: 10px auto;
         }
         label {
             font-weight: bold;
             margin-bottom: 5px;
             display: block;
         }
-        input[type="text"], select {
+        select, input[type="text"] {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -44,17 +49,69 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-right: 10px;
+            margin: 10px;
         }
         .btn:hover {
             background-color: #45a049;
         }
-        .result {
+        .card-list {
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: left;
+        }
+        .card-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .header {
+            height: 85px;
+            box-shadow: 0 1px 6px 0 rgb(0 0 0 / 8%);
+            width: 100%;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            z-index: 999;
+        }
+        .header__content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header__logo img {
+            height: 48px;
+        }
+        .header__right {
+            display: flex;
+            align-items: center;
+        }
+        .logout-button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            color: white;
+            background-color: red;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        footer {
             text-align: center;
-            padding: 20px;
-            background-color: #e8f5e9;
-            border-radius: 8px;
+            padding: 10px 0;
+            background-color: #f4f4f4;
+            color: #333;
             margin-top: 20px;
+            width: 100%;
         }
     </style>
 </head>
@@ -63,36 +120,37 @@
     <header class="header">
         <div class="header__content">
             <div class="header__logo">
-                <a href="./dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
+                <a href="./dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>Welcome to GBC Internet Banking</h1>
+            <h1 style="flex-grow: 1; text-align: center;">Manage Your Cards</h1>
             <div class="header__right">
-                Current User: Sengokuran
-                <button class="logout-button" onclick="window.location.href='index.html'">Logout</button>
+                Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
+                <button class="logout-button" onclick="window.location.href='logout.php'">Logout</button>
             </div>
         </div>
     </header>
 
     <div class="container" style="margin-top: 150px;">
-        <h1 id="l">Manage Your Card</h1>
+        <h1>Card Management</h1>
 
-        <div id="card-management-section">
-            <h2>Freeze or Unlock Your Card</h2>
-            <form id="card-management-form" onsubmit="manageCard(event)">
-                <div class="form-group">
-                    <label for="cardNumber">Card Number</label>
-                    <input type="text" id="cardNumber" name="cardNumber" placeholder="Enter Your Card Number" required>
-                </div>
-                <div class="form-group">
-                    <label for="action">Action</label>
-                    <select id="action" name="action" required>
-                        <option value="freeze">Freeze Card</option>
-                        <option value="unlock">Unlock Card</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn">Submit</button>
-            </form>
+        <!-- Single Card Operation -->
+        <h2>Single Card Operation</h2>
+        <form id="single-card-form" onsubmit="handleSingleCard(event)">
+            <div class="form-group">
+                <label for="singleCardNumber">Card Number</label>
+                <input type="text" id="singleCardNumber" name="singleCardNumber" placeholder="Enter Card Number" required>
+            </div>
+            <button type="button" class="btn" onclick="lockSingleCard()">Lock Card</button>
+            <button type="button" class="btn" onclick="unlockSingleCard()">Unlock Card</button>
+        </form>
+
+        <!-- Batch Card Operation -->
+        <h2>Your Cards</h2>
+        <div class="card-list" id="cardList">
+            <!-- Cards will be displayed here dynamically -->
         </div>
+        <button type="button" class="btn" id="batchLockBtn" style="display: none;" onclick="batchLock()">Batch Lock Cards</button>
+        <button type="button" class="btn" id="batchUnlockBtn" style="display: none;" onclick="batchUnlock()">Batch Unlock Cards</button>
     </div>
 
     <!-- Footer -->
@@ -101,20 +159,64 @@
     </footer>
 
     <script>
-        function manageCard(event) {
-            event.preventDefault();
+        // Simulate fetching user cards from backend
+        function loadUserCards() {
+            // Example data fetched from backend
+            const userCards = [
+                { cardNumber: '1234 5678 9876 5432', type: 'Credit Card' },
+                { cardNumber: '1111 2222 3333 4444', type: 'Debit Card' },
+                { cardNumber: '5555 6666 7777 8888', type: 'Credit Card' }
+            ];
 
-            const cardNumber = document.getElementById('cardNumber').value;
-            const action = document.getElementById('action').value;
-
-            if (action === "freeze") {
-                alert(`Card ${cardNumber} has been successfully frozen.`);
-            } else if (action === "unlock") {
-                alert(`Card ${cardNumber} has been successfully unlocked.`);
-            } else {
-                alert("Invalid action selected.");
+            const cardList = document.getElementById('cardList');
+            cardList.innerHTML = ''; // Clear the list
+            userCards.forEach(card => {
+                const cardItem = document.createElement('div');
+                cardItem.classList.add('card-item');
+                cardItem.innerHTML = `
+                    <input type="checkbox" value="${card.cardNumber}">
+                    ${card.cardNumber} (${card.type})
+                `;
+                cardList.appendChild(cardItem);
+            });
+            if (userCards.length > 0) {
+                document.getElementById('batchLockBtn').style.display = 'inline-block';
+                document.getElementById('batchUnlockBtn').style.display = 'inline-block';
             }
         }
+
+        // Single Card Operations
+        function lockSingleCard() {
+            const cardNumber = document.getElementById('singleCardNumber').value.trim();
+            alert(`Card ${cardNumber} has been locked.`);
+        }
+
+        function unlockSingleCard() {
+            const cardNumber = document.getElementById('singleCardNumber').value.trim();
+            alert(`Card ${cardNumber} has been unlocked.`);
+        }
+
+        // Batch Operations
+        function batchLock() {
+            const selectedCards = Array.from(document.querySelectorAll('#cardList input:checked')).map(el => el.value);
+            if (selectedCards.length) {
+                alert(`Locked cards: \n${selectedCards.join('\n')}`);
+            } else {
+                alert('No cards selected.');
+            }
+        }
+
+        function batchUnlock() {
+            const selectedCards = Array.from(document.querySelectorAll('#cardList input:checked')).map(el => el.value);
+            if (selectedCards.length) {
+                alert(`Unlocked cards: \n${selectedCards.join('\n')}`);
+            } else {
+                alert('No cards selected.');
+            }
+        }
+
+        // Load cards on page load
+        window.onload = loadUserCards;
     </script>
 </body>
 </html>

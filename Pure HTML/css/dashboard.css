@@ -96,7 +96,6 @@ body {
     border-top: 1px solid #ddd;
 }
 
-/* 用户搜索 */
 .user-search {
     margin-bottom: 20px;
     padding: 20px;
@@ -161,5 +160,5 @@ footer a {
 }
 
 .quick-link-links:hover {
-    color: #0278de; /* 可选，设置鼠标悬停时的颜色 */
+    color: #0278de; /* Setting the color of the mouse when hovering */
 }

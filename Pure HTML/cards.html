@@ -88,7 +88,7 @@
         <?php foreach ($cards as $card): ?>
             <div class="card-item">
                 <?php 
-                    // 根据卡片类型显示不同的图片
+                    // Display different images according to card type
                     $card_image = ($card['type'] === 'credit') ? './assets/credit.png' : './assets/debit.png'; 
                 ?>
                 <img src="<?php echo $card_image; ?>" alt="Card Icon">
