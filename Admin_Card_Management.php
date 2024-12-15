@@ -2,35 +2,35 @@
 session_start();
 include 'db_connection.php';
 
-// 检查用户是否为管理员
+// Check if the user is an administrator
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: admin_login.html"); // 如果未登录或非管理员，重定向到登录页面
+    header("Location: admin_login.html"); // Redirect to login page if not logged in or non-administrator
     exit();
 }
 
 $search_result = '';
-$execution_time = ''; // 用于存储执行时间
-$cards = []; // 用于存储搜索到的卡片信息
-$user_id = ''; // 初始化用户ID为空
+$execution_time = ''; // Used to store execution time
+$cards = []; // Used to store searched card information
+$user_id = ''; // Initialize user ID to null
 
-// 处理搜索用户ID
+// Handling Search User IDs
 if (isset($_POST['search_user'])) {
-    $user_id = $_POST['user_id'];  // 获取用户输入的用户ID
+    $user_id = $_POST['user_id'];  // Get the user ID entered by the user
 
-    // 开始计时
+    // start counting
     $start_time = microtime(true);
 
-    // 查询该用户ID下的所有卡片信息
+    // Query all card information under this user ID
     $stmt = $conn->prepare("SELECT * FROM cards WHERE cardholder_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // 如果查询到卡片信息，存入数组
+    // If the card information is queried, it is stored in an array
     if ($result->num_rows > 0) {
         $cards = [];
         while ($row = $result->fetch_assoc()) {
-            $cards[] = $row;  // 将卡片信息存入数组
+            $cards[] = $row;  // Storing card information into an array
         }
         $search_result = "<table border='1'><tr><th>Card Type</th><th>Card Number</th><th>Status</th><th>Actions</th></tr>";
         foreach ($cards as $card) {
@@ -52,16 +52,16 @@ if (isset($_POST['search_user'])) {
 
     $stmt->close();
 
-    // 结束计时
+    //End timing
     $end_time = microtime(true);
-    $execution_time = round(($end_time - $start_time) * 1000, 2); // 转换为毫秒
+    $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
 }
 
-// 处理清空搜索结果
+// Processing clear search results
 if (isset($_POST['clear'])) {
-    $search_result = '';  // 清空搜索结果
-    $execution_time = '';  // 清空执行时间
-    $user_id = ''; // 清空用户ID
+    $search_result = '';  // Clear Search Results
+    $execution_time = '';  // Clear execution time
+    $user_id = ''; // Clear User ID
 }
 
 ?>
@@ -92,23 +92,23 @@ if (isset($_POST['clear'])) {
 
     <!-- Main Dashboard Content -->
     <main class="dashboard">
-        <!-- 搜索用户ID功能 -->
+        <!-- Search User ID Function -->
         <section class="user-search">
             <h2>Search User's Cards</h2>
             <form method="post" action="">
                 <label for="user_id">User ID:</label>
                 <input type="text" name="user_id" id="user_id" value="<?php echo htmlspecialchars($user_id); ?>" required>
                 <input type="submit" name="search_user" value="Search">
-                <input type="submit" name="clear" value="Clear"> <!-- 清空搜索结果按钮 -->
+                <input type="submit" name="clear" value="Clear"> <!-- Clear Search Results button -->
             </form>
 
-            <!-- 显示搜索结果 -->
+            <!-- Show search results -->
             <div>
                 <?php if ($execution_time): ?>
                     <p>Search executed in <span><?php echo $execution_time; ?></span> milliseconds.</p><br>
                 <?php endif; ?>
                 <?php
-                // 输出搜索结果
+                // Output search results
                 if ($search_result) {
                     echo $search_result;
                 }
@@ -116,7 +116,7 @@ if (isset($_POST['clear'])) {
             </div>
         </section>
 
-        <!-- 返回到管理面板 -->
+        <!-- Return to Admin Panel -->
         <div class="back-link">
                 <p><a href="javascript:history.back()">Return to the previous page</a></p>
         </div>

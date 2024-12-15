@@ -2,39 +2,39 @@
 session_start();
 include 'db_connection.php';
 
-// 检查用户是否为管理员
+// Check if the user is an administrator
 if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
-    header("Location: admin_login.html"); // 如果未登录或非管理员，重定向到登录页面
+    header("Location: admin_login.html"); // Redirect to login page if not logged in or non-administrator
     exit();
 }
 
 $search_result = '';
-$execution_time = ''; // 用于存储执行时间
-$applycredits = []; // 用于存储查询到的申请信息
-$user_id = ''; // 初始化用户ID为空
+$execution_time = ''; // Used to store execution time
+$applycredits = []; // Used to store the information of the queried applications
+$user_id = ''; // Initialize user ID to null
 
-// 查询所有记录或根据用户ID查询
+// Query all records or query by user ID
 if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
-    $user_id = $_POST['user_id'];  // 获取用户输入的用户ID
+    $user_id = $_POST['user_id'];  // Get the user ID entered by the user
 
-    // 开始计时
+    // start counting
     $start_time = microtime(true);
 
-    // 查询该用户ID下的所有信用卡申请信息
+    // Query all credit card applications under this user ID
     $stmt = $conn->prepare("SELECT * FROM applycredit WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // 如果查询到申请信息，存入数组
+    // If the application information is queried, it is stored in an array
     if ($result->num_rows > 0) {
         $applycredits = [];
         while ($row = $result->fetch_assoc()) {
-            $applycredits[] = $row;  // 将申请信息存入数组
+            $applycredits[] = $row;  // Storing application information in an array
         }
         $search_result = "<table class='result-table'><tr><th>Apply ID</th><th>User ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Status</th><th>Actions</th></tr>";
         foreach ($applycredits as $applycredit) {
-            // 如果status为waiting，显示refuse和success按钮
+            // If status is WAITING, the REFUSE and SUCCESS buttons are displayed.
             if ($applycredit['status'] == 'waiting') {
                 $actions = "<form method='POST' id='form_" . $applycredit['apply_id'] . "'>
                     <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Refuse</button>
@@ -61,27 +61,27 @@ if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
 
     $stmt->close();
 
-    // 结束计时
+    // End timing
     $end_time = microtime(true);
-    $execution_time = round(($end_time - $start_time) * 1000, 2); // 转换为毫秒
+    $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
 } else {
-    // 如果没有搜索条件，查询所有申请记录
+    // If there are no search criteria, check all application records
     $start_time = microtime(true);
 
-    // 查询所有applycredit记录
+    // Search all applycredit records
     $stmt = $conn->prepare("SELECT * FROM applycredit");
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // 如果查询到申请信息，存入数组
+    // If the application information is queried, it is stored in an array
     if ($result->num_rows > 0) {
         $applycredits = [];
         while ($row = $result->fetch_assoc()) {
-            $applycredits[] = $row;  // 将申请信息存入数组
+            $applycredits[] = $row;  // Storing application information in an array
         }
         $search_result = "<table class='result-table'><tr><th>Apply ID</th><th>User ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Status</th><th>Actions</th></tr>";
         foreach ($applycredits as $applycredit) {
-            // 如果status为waiting，显示refuse和success按钮
+            // If status is WAITING, the REFUSE and SUCCESS buttons are displayed.
             if ($applycredit['status'] == 'waiting') {
                 $actions = "<form method='POST' id='form_" . $applycredit['apply_id'] . "'>
                     <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Refuse</button>
@@ -107,71 +107,66 @@ if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
     }
 
     $stmt->close();
-
-    // 结束计时
-    $end_time = microtime(true);
-    $execution_time = round(($end_time - $start_time) * 1000, 2); // 转换为毫秒
 }
 
-// 处理拒绝操作
+// Handling of rejected operations
 if (isset($_POST['refuse'])) {
     $apply_id = $_POST['refuse'];
 
-    // 更新applycredit表的状态为refuse
+    // Update the status of the applycredit table to refuse
     $stmt = $conn->prepare("UPDATE applycredit SET status = 'refuse' WHERE apply_id = ?");
     $stmt->bind_param("i", $apply_id);
     $stmt->execute();
     $stmt->close();
 
-    // 刷新页面以反映更新
+    // Refresh the page to reflect the update
     header("Location: Application_Management.php");
     exit();
 }
 
-// 处理成功操作
+// Processing Successful Operations
 if (isset($_POST['success'])) {
     $apply_id = $_POST['success'];
 
-    // 更新applycredit表的状态为success
+    // Update the status of the applycredit table to SUCCESS
     $stmt = $conn->prepare("UPDATE applycredit SET status = 'success' WHERE apply_id = ?");
     $stmt->bind_param("i", $apply_id);
     $stmt->execute();
     
-    // 获取该申请信息
+    // Get information about this application
     $stmt = $conn->prepare("SELECT * FROM applycredit WHERE apply_id = ?");
     $stmt->bind_param("i", $apply_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $applycredit = $result->fetch_assoc();
     
-    // 在creditcards表中插入一条新记录
+    // Insert a new record in the creditcards table
     $stmt = $conn->prepare("INSERT INTO creditcards (quota, remaining_quota, repayment_date, apply_id) VALUES (?, ?, ?, ?)");
-    $quota = 50000;  // 默认为50000
-    $remaining_quota = 50000;  // 默认为50000
-    $repayment_date = date("Y-m-d", strtotime("+30 days"));  // 假设还款日期为30天后
+    $quota = 50000;
+    $remaining_quota = 50000;
+    $repayment_date = date("Y-m-d", strtotime("+30 days"));  // Assuming a repayment date of 30 days from now
     $stmt->bind_param("iisi", $quota, $remaining_quota, $repayment_date, $apply_id);
     $stmt->execute();
     $stmt->close();
 
-    // 获取刚插入的creditcard_id
+    // Get the creditcard_id that was just inserted.
     $creditcard_id = $conn->insert_id;
 
-    // 在cards表中插入一条新记录
+    // Insert a new record in the cards table
     $stmt = $conn->prepare("INSERT INTO cards (cardholder_id, card_number, type, blocked) VALUES (?, ?, 'credit', 0)");
-    $stmt->bind_param("ii", $applycredit['user_id'], $creditcard_id); // 使用creditcard_id作为card_number
+    $stmt->bind_param("ii", $applycredit['user_id'], $creditcard_id); // Using creditcard_id as card_number
     $stmt->execute();
     $stmt->close();
 
-    // 刷新页面以反映更新
+    // Refresh the page to reflect the update
     header("Location: Application_Management.php");
     exit();
 }
 
-// 处理清空搜索结果
 if (isset($_POST['clear'])) {
-    $search_result = '';  // 清空搜索结果
-    $execution_time = '';  // 清空执行时间
-    $user_id = ''; // 清空用户ID
+    $search_result = '';  // Clear Search Results
+    $execution_time = '';  // Clear execution time
+    $user_id = ''; // Clear User ID
 }
 
 ?>
@@ -202,23 +197,23 @@ if (isset($_POST['clear'])) {
 
     <!-- Main Dashboard Content -->
     <main class="dashboard">
-        <!-- 搜索用户ID功能 -->
+        <!-- Search User ID Function -->
         <section class="user-search">
             <h2>Search User's Cards</h2>
             <form method="post" action="">
                 <label for="user_id">User ID:</label>
                 <input type="text" name="user_id" id="user_id" value="<?php echo htmlspecialchars($user_id); ?>" required>
                 <input type="submit" name="search_user" value="Search">
-                <input type="submit" name="clear" value="Clear"> <!-- 清空搜索结果按钮 -->
+                <input type="submit" name="clear" value="Clear"> <!-- Clear Search Results button -->
             </form>
 
-            <!-- 显示搜索结果 -->
+            <!-- Show search results -->
             <div>
                 <?php if ($execution_time): ?>
                     <p>Search executed in <span><?php echo $execution_time; ?></span> milliseconds.</p><br>
                 <?php endif; ?>
                 <?php
-                // 输出搜索结果
+                // Output search results
                 if ($search_result) {
                     echo $search_result;
                 }
@@ -226,7 +221,7 @@ if (isset($_POST['clear'])) {
             </div>
         </section>
 
-        <!-- 返回到管理面板 -->
+        <!-- Return to Admin Panel -->
         <div class="back-link">
             <p><a href="javascript:history.back()">Return to the previous page</a></p>
         </div>

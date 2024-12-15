@@ -3,7 +3,7 @@ session_start();
 include 'db_connection.php';
 
 if (!isset($_SESSION['username'])) {
-    header("Location: index.html"); // 如果没有登录则跳转到登录页面
+    header("Location: index.html"); // Jump to login page if not logged in
     exit();
 }
 
@@ -12,22 +12,22 @@ $current_username = $_SESSION['username'];
 //Start timing
 $start_time = microtime(true); 
 
-// 查询当前地址
+// Query current address
 $stmt = $conn->prepare("SELECT address FROM users WHERE username=?");
 $stmt->bind_param("s", $current_username);
 $stmt->execute();
 $result = $stmt->get_result();
 
 $user_data = $result->fetch_assoc();
-$current_address = $user_data['address'] ?? 'Not available'; // 如果没有地址，则显示默认信息
+$current_address = $user_data['address'] ?? 'Not available'; // If there is no address, the default message is displayed
 
 $stmt->close();
 
-// 处理更改地址请求
+// Processing change-of-address requests
 if (isset($_POST['update_address'])) {
-    $new_address = $_POST['new_address'];  // 新地址
+    $new_address = $_POST['new_address'];  // new address
 
-    // 更新数据库中的地址
+    // Updating addresses in the database
     $stmt = $conn->prepare("UPDATE users SET address=? WHERE username=?");
     $stmt->bind_param("ss", $new_address, $current_username);
 
@@ -138,12 +138,12 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
         <div class="form-container">
             <h2>Update Your Address</h2>
 
-            <!-- 显示当前地址 -->
+            <!-- Display current address -->
             <div class="current-address">
                 <strong>Current Address:</strong><br> <?php echo htmlspecialchars($current_address); ?>
             </div>
 
-            <!-- 修改地址表单 -->
+            <!-- Modify Address Form -->
             <form method="post" action="">
                 <div class="form-group">
                     <label for="new_address">New Address:</label>
