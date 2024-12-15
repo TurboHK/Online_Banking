@@ -9,6 +9,9 @@ if (!isset($_SESSION['username'])) {
 
 $current_username = $_SESSION['username']; // 当前登录的用户名
 
+//Start timing
+$start_time = microtime(true); 
+
 // 查询当前用户名对应的用户 ID
 $stmt = $conn->prepare("SELECT id FROM users WHERE username=?");
 $stmt->bind_param("s", $current_username);
@@ -20,6 +23,10 @@ $user_data = $result->fetch_assoc();
 $user_id = $user_data['id'] ?? 'N/A'; // 如果没有找到，默认显示 'N/A'
 
 $stmt->close();
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
 ?>
 
 <!DOCTYPE html>
@@ -84,19 +91,20 @@ $stmt->close();
             </div>
             <div class="link">
                 <img src="./assets/icons/transaction.png"/>
-                <span>Transactions</span>
+                <a href="./transaction.php" class="quick-link-links"><span>Transactions</span></a>
             </div>
             <div class="link">
                 <img src="./assets/icons/transfer.png"/>
-                <span>Transfer</span>
+                <a href="./transfer.php" class="quick-link-links"><span>Transfer</span></a>
+
             </div>
             <div class="link">
                 <img src="./assets/icons/foreign-exchange.png"/>
-                <span>Foreign Exchange</span>
+                <a href="./foreign_exchange_management.php" class="quick-link-links"><span>Foreign Exchange</span></a>
             </div>
             <div class="link">
                 <img src="./assets/icons/card.png"/>
-                <a href="./cards.php" class="quick-link-links"><span>Cards</span></a>
+                <a href="./user_card_management.php" class="quick-link-links"><span>Cards</span></a>
             </div>
             <div class="link">
                 <img src="./assets/icons/credit.png"/>
@@ -107,5 +115,8 @@ $stmt->close();
     </main>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>

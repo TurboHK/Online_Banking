@@ -1,3 +1,41 @@
+<?php
+session_start();
+include 'db_connection.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: index.html");
+    exit();
+}
+
+$cardNumber = $_GET['card'] ?? null;
+
+if (!$cardNumber) {
+    echo "Invalid card number.";
+    exit();
+}
+
+// Start timing
+$start_time = microtime(true);
+
+// 查询信用卡详情
+$stmt = $conn->prepare("SELECT * FROM credit_cards WHERE card_number=?");
+$stmt->bind_param("s", $cardNumber);
+$stmt->execute();
+$result = $stmt->get_result();
+$cardData = $result->fetch_assoc();
+
+if (!$cardData) {
+    echo "Card details not found.";
+    exit();
+}
+
+$stmt->close();
+
+// End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,29 +43,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
-    <title>Debit Card Details | GBC Internet Banking</title>
+    <title>Credit Card Details | GBC Internet Banking</title>
+
 </head>
 <body>
-        <!-- Header -->
-        <header class="header">
-            <div class="header__content">
-                <div class="header__logo">
-                    <a href="./dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
-                </div>
-                <h1>Card Details</h1>
-                <div class="header__right">
-                    User: Sengokuran
-                    <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='index.html'">Logout</button>
-                </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__content">
+            <div class="header__logo">
+                <a href="./dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-        </header>
+            <h1>Welcome to GBC Internet Banking</h1>
+            <div class="header__right">
+                Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
+                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
+            </div>
+
+        </div>
+    </header>
+    
     <div class="container">
-        <h1>Debit Card Details</h1>
+        <h1>Card Details</h1>
         <div class="details">
-            <p><strong>Card Number:</strong> <?php echo htmlspecialchars($cardData['card_number']); ?>1111 2222 3333 4444</p>
-            <p><strong>Last Transaction:</strong> <?php echo htmlspecialchars($cardData['last_transaction']); ?>2024-11-10</p>
-            <p><strong>Spending Limit:</strong> <?php echo htmlspecialchars($cardData['spending_limit']); ?> 30000.00</p>
-            <p><strong>Available Balance:</strong> <?php echo htmlspecialchars($cardData['available_balance']); ?> 25000.00</p>
+            <p><strong>Card Number:</strong> <?php echo htmlspecialchars($cardData['card_number']); ?></p>
+            <p><strong>Last Transaction:</strong> <?php echo htmlspecialchars($cardData['last_transaction']); ?></p>
+            <p><strong>Repayment Date:</strong> <?php echo htmlspecialchars($cardData['repayment_date']); ?></p>
+            <p><strong>Credit Limit:</strong> <?php echo htmlspecialchars($cardData['credit_limit']); ?></p>
+            <p><strong>Available Balance:</strong> <?php echo htmlspecialchars($cardData['available_balance']); ?></p>
         </div>
 
         <div class="button-group">
@@ -41,9 +83,12 @@
     </div>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
-    
+
     <script>
         function handleCardAction(action) {
             const cardNumber = "<?php echo htmlspecialchars($cardData['card_number']); ?>";
@@ -98,5 +143,6 @@
         background-color: #388E3C;
     }
 </style>
+
 </body>
 </html>

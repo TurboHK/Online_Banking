@@ -1,3 +1,22 @@
+<?php
+session_start();
+include 'db_user_connection.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: index.html"); //If not logged in redirect to login page
+    exit();
+}
+
+$current_username = $_SESSION['username']; // 当前登录的用户名
+
+//Start timing
+$start_time = microtime(true); 
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -64,11 +83,14 @@
     </main>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 
     <style>
-         /* Center the form and set the appropriate width */
+         /* 使表单居中并设置适当的宽度 */
         .dashboard {
             display: flex;
             justify-content: center;

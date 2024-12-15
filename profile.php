@@ -9,13 +9,16 @@ if (!isset($_SESSION['username'])) {
 
 $current_username = $_SESSION['username'];
 
-// 查询用户的全部信息
+//Start timing
+$start_time = microtime(true); 
+
+// Query all information about a user
 $stmt = $conn->prepare("SELECT id, username, name, phone, created_at, address, picture FROM users WHERE username=?");
 $stmt->bind_param("s", $current_username);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// 获取用户数据
+// Getting user data
 $user_data = $result->fetch_assoc();
 $user_id = $user_data['id'] ?? 'N/A';
 $username = $user_data['username'] ?? 'N/A';
@@ -26,6 +29,10 @@ $name = $user_data['name'] ?? 'N/A';
 $picture = $user_data['picture'] ?? null;
 
 $stmt->close();
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +62,7 @@ $stmt->close();
 
     <main class="dashboard">
         <div class="info-container">
-            <!-- 左侧卡片 -->
+            <!-- Left card -->
             <section class="account-summary">
                 <h2>Overview</h2>
                 <div class="sub-accounts">
@@ -86,20 +93,19 @@ $stmt->close();
                 </div>
             </section>
     
-            <!-- 右侧卡片 -->
-            <!-- 右侧卡片 -->
+            <!-- Right card -->
             <section class="account-summary">
                 <h2>Profile Picture</h2>
                 <div class="account">
                     <?php if ($picture): ?>
-                        <!-- 图片显示 -->
+                        <!-- Image Display -->
                         <img src="data:image/jpeg;base64,<?php echo base64_encode($picture); ?>" alt="Profile Picture" class="profile-picture">
                     <?php else: ?>
-                        <!-- 如果没有图片，显示占位符 -->
+                        <!-- If there is no image, show placeholder -->
                         No profile picture uploaded.<br><br>Consider uploading one to make your profile unique!<br><br>
                     <?php endif; ?>
                     
-                    <!-- 上传按钮 -->
+                    <!-- Upload button -->
                     <form action="upload_picture.php" method="POST" enctype="multipart/form-data" class="upload-form">
                         <input type="file" name="profile_picture" accept="image/*" required>
                         <button type="submit">Update Picture</button>
@@ -117,28 +123,31 @@ $stmt->close();
     </main>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 
     <style>
         .update-button-container {
-        text-align: center; /* 居中按钮 */
-        margin: 20px 0; /* 按钮与其他内容的间距 */
+        text-align: center; /* center button */
+        margin: 20px 0; /* Spacing between buttons and other content */
         }
 
-    .update-button-container button {
-        padding: 10px 20px;
-        background-color: #4BA247; /* 按钮背景颜色 */
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-    }
+        .update-button-container button {
+            padding: 10px 20px;
+            background-color: #4BA247; /* Button background color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
         .info-container {
-            display: flex; /* 水平排列 */
-            gap: 20px; /* 卡片之间的间距 */
+            display: flex; /* horizontal arrangement */
+            gap: 20px; /* Spacing between cards */
         }
 
         .account-summary {
@@ -146,11 +155,11 @@ $stmt->close();
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 80%; /* 默认60%宽度，用于左侧卡片 */
+            width: 80%; /* Default 60% width for left side cards */
         }
 
         .account-summary:nth-child(2) {
-            width: 20%; /* 第二张卡片占40%宽度 */
+            width: 20%; /* The second card is 40% of the width */
         }
 
         .account {
@@ -160,20 +169,20 @@ $stmt->close();
         }
         
         .profile-picture {
-            width: 100%; /* 图片占满父容器宽度 */
-            max-width: 200px; /* 可选：设置图片最大宽度 */
+            width: 100%; /* The image takes up the full width of the parent container */
+            max-width: 200px; /* Setting the maximum width of an image */
             border-radius: 10px;
-            margin-bottom: 15px; /* 图片与按钮之间的间距 */
+            margin-bottom: 15px; /* Spacing between images and buttons */
         }
         
         .upload-form {
             display: flex;
-            flex-direction: column; /* 垂直排列上传组件 */
-            align-items: center; /* 居中按钮 */
+            flex-direction: column; /* Vertical Alignment Upload Component */
+            align-items: center; /* center button */
         }
         
         .upload-form input[type="file"] {
-            margin-bottom: 10px; /* 上传文件选择框与按钮之间的间距 */
+            margin-bottom: 10px; /* Spacing between the upload file selection box and the button */
         }
         
         .upload-form button {
@@ -187,7 +196,7 @@ $stmt->close();
         }
         
         .upload-form button:hover {
-            background-color: #0a254a; /* 按钮悬停效果 */
+            background-color: #0a254a; /* Button Hover Effect */
         }
         
     </style>

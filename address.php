@@ -9,6 +9,9 @@ if (!isset($_SESSION['username'])) {
 
 $current_username = $_SESSION['username'];
 
+//Start timing
+$start_time = microtime(true); 
+
 // 查询当前地址
 $stmt = $conn->prepare("SELECT address FROM users WHERE username=?");
 $stmt->bind_param("s", $current_username);
@@ -36,6 +39,9 @@ if (isset($_POST['update_address'])) {
     $stmt->close();
     $conn->close();
 }
+
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
 ?>
 
 <!DOCTYPE html>
@@ -163,7 +169,10 @@ if (isset($_POST['update_address'])) {
     </main>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 </body>
 </html>

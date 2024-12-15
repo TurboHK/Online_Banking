@@ -1,3 +1,22 @@
+<?php
+session_start();
+include 'db_user_connection.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: index.html"); // 如果没有登录则跳转到登录页面
+    exit();
+}
+
+$current_username = $_SESSION['username'];
+
+//Start timing
+$start_time = microtime(true);
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,14 +31,13 @@
     <header class="header">
         <div class="header__content">
             <div class="header__logo">
-                <a href="./dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
+                <a href="./dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>My Cards</h1>
+            <h1>Welcome to GBC Internet Banking</h1>
             <div class="header__right">
-                User name: Sengokuran
-                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='index.html'">Logout</button>
+                Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
+                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
             </div>
-
         </div>
     </header>
 
@@ -44,19 +62,22 @@
     </div>
 
     <div class="back-link">
-        <p><a href="./dashboard.html">Return to the Dashboard</a></p>
+        <p><a href="./dashboard.php">Return to the Dashboard</a></p>
     </div>
     
     <!-- Footer -->
-    <footer>
-        <span>©2024 Global Banking Corporation Limited. All rights reserved.</span>
+    <footer class="footer">
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 
     <script>
         // Example data fetched from backend
         const userCards = [
-            { cardNumber: '1234 5678 9876 5432', type: 'Credit Card', detailsPage: 'credit_card_details.html' },
-            { cardNumber: '1111 2222 3333 4444', type: 'Debit Card', detailsPage: 'debit_card_details.html' },
+            { cardNumber: '1234 5678 9876 5432', type: 'Credit Card', detailsPage: 'credit_card_details.php?card=1234' },
+            { cardNumber: '1111 2222 3333 4444', type: 'Debit Card', detailsPage: 'debit_card_details.php' },
         ];
 
         // Function to load and filter cards

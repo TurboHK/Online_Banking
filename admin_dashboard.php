@@ -294,7 +294,10 @@ if (isset($_POST['delete_user'])) {
 
 <!-- DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! --> 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 <!-- DO NOT CHANGE ANYTHING ABOVE THIS LINE! DO NOT CHANGE ANYTHING ABOVE THIS LINE! DO NOT CHANGE ANYTHING ABOVE THIS LINE! DO NOT CHANGE ANYTHING ABOVE THIS LINE! -->
 </body>

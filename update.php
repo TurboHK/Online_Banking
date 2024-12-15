@@ -9,6 +9,9 @@ if (!isset($_SESSION['username'])) {
 
 $current_username = $_SESSION['username'];
 
+//Start timing
+$start_time = microtime(true);
+
 // 查询用户的全部信息
 $stmt = $conn->prepare("SELECT id, username, name, phone, created_at, address, picture FROM users WHERE username=?");
 $stmt->bind_param("s", $current_username);
@@ -51,6 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $stmt->close();
 }
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
 ?>
 
 <!DOCTYPE html>
@@ -123,7 +130,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </main>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 
     <style>

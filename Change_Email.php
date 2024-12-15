@@ -7,6 +7,9 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
+//Start timing
+$start_time = microtime(true);
+
 // 处理更改邮箱请求
 if (isset($_POST['update_email'])) {
     $current_email = $_POST['current_email'];  // 当前的用户名（邮箱）
@@ -39,6 +42,10 @@ if (isset($_POST['update_email'])) {
         echo "<script>alert('The current email (username) does not match our records.');</script>";
     }
 }
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
 ?>
 
 <!DOCTYPE html>
@@ -162,7 +169,10 @@ if (isset($_POST['update_email'])) {
     </main>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 </body>
 </html>

@@ -7,6 +7,9 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
+//Start timing
+$start_time = microtime(true);
+
 // 处理更改密码请求
 if (isset($_POST['update_password'])) {
     $current_password = $_POST['current_password'];  // 当前密码
@@ -47,6 +50,10 @@ if (isset($_POST['update_password'])) {
         echo "<script>alert('The current password is incorrect.');</script>";
     }
 }
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
 ?>
 
 <!DOCTYPE html>
@@ -182,7 +189,10 @@ if (isset($_POST['update_password'])) {
     </main>
 
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 </body>
 </html>

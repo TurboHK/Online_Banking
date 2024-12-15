@@ -1,3 +1,22 @@
+<?php
+session_start();
+include 'db_user_connection.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: index.html"); // 如果没有登录则跳转到登录页面
+    exit();
+}
+
+$current_username = $_SESSION['username'];
+
+//Start timing
+$start_time = microtime(true);
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,24 +27,25 @@
         <link rel="stylesheet" href="./css/dashboard.css" />
         <link rel="icon" href="assets/logo.png" type="image/png">
     <title>Transaction History | GBC Internet Banking</title>
+
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="header__content">
             <div class="header__logo">
-                <a href="./dashboard.html"><img src="./assets/logo.png" alt="Bank Logo"></a>
+                <a href="./dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>Transaction History</h1>
+            <h1>Welcome to GBC Internet Banking</h1>
             <div class="header__right">
-                User name: Sengokuran
-                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='index.html'">Logout</button>
+                Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
+                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
             </div>
-
         </div>
     </header>
 
     <div class="container" style="margin-top: 150px;">
+        <h1>Transaction History</h1>
         <h2>Recent Transactions</h2>
         <table id="transaction-table">
             <thead>
@@ -33,8 +53,6 @@
                     <th>Transaction ID</th>
                     <th>Card Number</th>
                     <th>Transaction Date</th>
-                    <th>Transaction Type</th>
-                    <th>Payee</th>
                     <th>Amount</th>
                 </tr>
             </thead>
@@ -43,40 +61,30 @@
                     <td>1</td>
                     <td>1234 5678 9876 5432</td>
                     <td>2024-11-01</td>
-                    <td>Transfer</td>
-                    <td>4577 8945 1354 9965</td>
-                    <td>-$100</td>
+                    <td>$100</td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td>1111 2222 3333 4444</td>
                     <td>2024-10-28</td>
-                    <td>Foreign Exchange</td>
-                    <td>Foreign Exchange Account</td>
-                    <td>-$200</td>
+                    <td>$200</td>
                 </tr>
                 <tr>
                     <td>3</td>
                     <td>1234 5678 9876 5432</td>
                     <td>2024-11-02</td>
-                    <td>Cash Withdrawl</td>
-                    <td>Cash</td>
-                    <td>-$150</td>
+                    <td>$150</td>
                 </tr>
                 <tr>
                     <td>4</td>
                     <td>5555 6666 7777 8888</td>
                     <td>2024-11-05</td>
-                    <td>Credit Card Repayment</td>
-                    <td>1234 5678 9876 5432</td>
-                    <td>-$5,000</td>
+                    <td>$500</td>
                 </tr>
                 <tr>
                     <td>5</td>
                     <td>1234 5678 9876 5432</td>
                     <td>2024-11-06</td>
-                    <td>Cash Deposit</td>
-                    <td>Cash</td>
                     <td>$300</td>
                 </tr>
             </tbody>
@@ -94,16 +102,20 @@
             <a href="#">»</a>
         </div>
     </div>
+
     <div class="back-link">
         <p><a href="javascript:history.back()">Return to the previous page</a></p>
     </div>
     
     <!-- Footer -->
     <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
-
-    <style>
+</body>
+<style>
         table {
             width: 100%;
             border-collapse: collapse;
@@ -162,6 +174,6 @@
             color: #0064d2;
         }
     </style>
-</body>
+
 </html>
 

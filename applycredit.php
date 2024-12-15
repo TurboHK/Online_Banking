@@ -11,6 +11,9 @@ if (!isset($_SESSION['username'])) {
 // 获取当前登录的用户名
 $username = $_SESSION['username'];
 
+//Start timing
+$start_time = microtime(true); 
+
 // 查询当前用户信息
 $user_info = null;
 $stmt = $conn->prepare("SELECT id, name, address ,phone FROM users WHERE username = ?");
@@ -88,6 +91,10 @@ if ($stmt) {
     $applications_result = $stmt->get_result();
     $stmt->close();
 }
+
+//End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
 ?>
 
 <!DOCTYPE html>
@@ -98,7 +105,98 @@ if ($stmt) {
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
     <title>Apply for Credit | GBC Internet Banking</title>
-    <style>
+</head>
+<body>
+    <header class="header">
+        <div class="header__content">
+            <div class="header__logo">
+                <a href="dashboard.php" style="text-decoration: none;">
+                    <img src="./assets/logo.png" alt="Bank Logo">
+                </a>
+            </div>
+            <h1>Welcome to GBC Internet Banking</h1>
+            <div class="header__right">
+                Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
+                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <div class="form-container">
+            <h2>Apply For Credit Cards</h2>
+            <form method="post" action="">
+                <div class="form-group">
+                    <label for="Name">Name:</label>
+                    <input type="text" name="Name" placeholder="Full Name" value="<?php echo htmlspecialchars($user_name); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label for="Address">Address:</label>
+                    <input type="text" name="Address" placeholder="Address" value="<?php echo htmlspecialchars($user_address); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label for="Phone">Phone:</label>
+                    <input type="tel" name="Phone" placeholder="Phone number" pattern="^\d{8}$" minlength="8" maxlength="8" value="<?php echo htmlspecialchars($user_phone); ?>" required>
+                </div>
+                If you want to change the information above, please click <a href="./profile.php">here</a>.<br><br>
+                <div class="form-group">
+                    <input type="submit" name="submit" value="Submit">
+                </div>
+            </form>
+
+            <!-- 显示用户申请记录 -->
+            <h3>Your Current Applications</h3>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                <?php
+                if ($applications_result && $applications_result->num_rows > 0) {
+                    while ($row = $applications_result->fetch_assoc()) {
+                        echo "<tr>
+                                <td>{$row['apply_id']}</td>
+                                <td>{$row['name']}</td>
+                                <td>{$row['address']}</td>
+                                <td>{$row['phone']}</td>
+                                <td>{$row['status']}</td>
+                                <td>";
+                        // 检查状态，如果是 "waiting"，显示取消按钮，否则显示 "Complete"
+                        if ($row['status'] === 'waiting') {
+                            echo "<form method='post' action='' style='margin: 0;'>
+                                    <input type='hidden' name='apply_id' value='{$row['apply_id']}'>
+                                    <input type='submit' name='cancel' value='Cancel' class='cancel-button'>
+                                  </form>";
+                        } else {
+                            echo "<span style='color: gray;'>Complete</span>";
+                        }
+                        echo "</td>
+                              </tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='6'>No current applications</td></tr>";
+                }
+                ?>
+            </table>
+        </div>
+    </main>
+
+    <div class="back-link">
+        <p><a href="javascript:history.back()">Return to the previous page</a></p>
+    </div>
+
+    <footer class="footer">
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
+    </footer>
+</body>
+<style>
         .form-container {
             max-width: 600px;
             margin: 50px auto;
@@ -175,88 +273,15 @@ if ($stmt) {
         .cancel-button:hover {
             background-color: #c9302c;
         }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            text-decoration: none;
+            color: #0064d2;
+        }
     </style>
-</head>
-<body>
-    <header class="header">
-        <div class="header__content">
-            <div class="header__logo">
-                <a href="dashboard.php" style="text-decoration: none;">
-                    <img src="./assets/logo.png" alt="Bank Logo">
-                </a>
-            </div>
-            <h1>Welcome to GBC Internet Banking</h1>
-            <div class="header__right">
-                Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
-                <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
-            </div>
-        </div>
-    </header>
-
-    <main class="dashboard">
-        <div class="form-container">
-            <h2>Apply For Credit Cards</h2>
-            <form method="post" action="">
-                <div class="form-group">
-                    <label for="Name">Name:</label>
-                    <input type="text" name="Name" placeholder="Full Name" value="<?php echo htmlspecialchars($user_name); ?>" required>
-                </div>
-                <div class="form-group">
-                    <label for="Address">Address:</label>
-                    <input type="text" name="Address" placeholder="Address" value="<?php echo htmlspecialchars($user_address); ?>" required>
-                </div>
-                <div class="form-group">
-                    <label for="Phone">Phone:</label>
-                    <input type="tel" name="Phone" placeholder="Phone number" pattern="^\d{8}$" minlength="8" maxlength="8" value="<?php echo htmlspecialchars($user_phone); ?>" required>
-                </div>
-                <div class="form-group">
-                    <input type="submit" name="submit" value="Submit">
-                </div>
-            </form>
-
-            <!-- 显示用户申请记录 -->
-            <h3>Your Current Applications</h3>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Address</th>
-                    <th>Phone Number</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                <?php
-                if ($applications_result && $applications_result->num_rows > 0) {
-                    while ($row = $applications_result->fetch_assoc()) {
-                        echo "<tr>
-                                <td>{$row['apply_id']}</td>
-                                <td>{$row['name']}</td>
-                                <td>{$row['address']}</td>
-                                <td>{$row['phone']}</td>
-                                <td>{$row['status']}</td>
-                                <td>";
-                        // 检查状态，如果是 "waiting"，显示取消按钮，否则显示 "Complete"
-                        if ($row['status'] === 'waiting') {
-                            echo "<form method='post' action='' style='margin: 0;'>
-                                    <input type='hidden' name='apply_id' value='{$row['apply_id']}'>
-                                    <input type='submit' name='cancel' value='Cancel' class='cancel-button'>
-                                  </form>";
-                        } else {
-                            echo "<span style='color: gray;'>Complete</span>";
-                        }
-                        echo "</td>
-                              </tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='6'>No current applications</td></tr>";
-                }
-                ?>
-            </table>
-        </div>
-    </main>
-
-    <footer class="footer">
-        <span class="author">©2024 Global Banking Corporation Limited. All rights reserved.</span>
-    </footer>
-</body>
 </html>
