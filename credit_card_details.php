@@ -17,7 +17,8 @@ if (!$cardNumber) {
 // Start timing
 $start_time = microtime(true);
 
-// 查询信用卡详情
+// Check credit card details
+
 $stmt = $conn->prepare("SELECT * FROM credit_cards WHERE card_number=?");
 $stmt->bind_param("s", $cardNumber);
 $stmt->execute();

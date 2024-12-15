@@ -7,7 +7,8 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-$current_username = $_SESSION['username']; // 当前登录的用户名
+$current_username = $_SESSION['username']; // Currently logged in username
+
 
 //Start timing
 $start_time = microtime(true); 
@@ -90,7 +91,6 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
     </footer>
 
     <style>
-         /* 使表单居中并设置适当的宽度 */
         .dashboard {
             display: flex;
             justify-content: center;

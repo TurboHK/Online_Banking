@@ -3,40 +3,41 @@ session_start();
 include 'db_user_connection.php';
 
 if (!isset($_SESSION['username'])) {
-    header("Location: index.html"); // 如果没有登录则跳转到登录页面
+    header("Location: index.html"); // If you are not logged in, go to the login page.
     exit();
 }
 
 //Start timing
 $start_time = microtime(true);
 
-// 处理更改密码请求
+// Processing password change requests
 if (isset($_POST['update_password'])) {
-    $current_password = $_POST['current_password'];  // 当前密码
-    $new_password = $_POST['new_password'];  // 新密码
-    $confirm_password = $_POST['confirm_password'];  // 确认新密码
-    $current_username = $_SESSION['username']; // 当前登录的用户名
+    $current_password = $_POST['current_password'];  // Current password
+    $new_password = $_POST['new_password'];  // new password
+    $confirm_password = $_POST['confirm_password'];  // Confirm new password
+    $current_username = $_SESSION['username']; // Currently logged in username
 
-    // 验证原有密码是否正确
+    // Verify that the original password is correct
     $stmt = $conn->prepare("SELECT password FROM users WHERE username=?");
     $stmt->bind_param("s", $current_username);
     $stmt->execute();
     $result = $stmt->get_result();
     $user_data = $result->fetch_assoc();
 
-    // 检查当前密码是否正确
+    // Check if the current password is correct
     if ($user_data && password_verify($current_password, $user_data['password'])) {
-        // 检查新密码和确认密码是否匹配
+        // Check that the new password matches the confirmation password
         if ($new_password === $confirm_password) {
-            // 使用哈希存储新密码
+            // Use a hash to store the new password
             $new_password_hashed = password_hash($new_password, PASSWORD_DEFAULT);
 
-            // 更新数据库中的密码
+            // Update the password in the database
+
             $stmt = $conn->prepare("UPDATE users SET password=? WHERE username=?");
             $stmt->bind_param("ss", $new_password_hashed, $current_username);
 
             if ($stmt->execute()) {
-                // 更新成功后弹出修改成功的提示框并跳转
+                // Popup with successful modification and jump after successful update
                 echo "<script>alert('Password updated successfully.'); window.location.href='dashboard.php';</script>";
                 exit();
             } else {

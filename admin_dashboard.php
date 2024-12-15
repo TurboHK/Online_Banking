@@ -48,15 +48,15 @@ if ($admins_role_result) {
 $current_db_user = $conn->query("SELECT CURRENT_USER() AS db_user")->fetch_assoc();
 $db_user_info = $current_db_user['db_user'];
 
-$current_username = $_SESSION['username']; // 当前登录的用户名
-// 查询当前用户名对应的用户 ID
+$current_username = $_SESSION['username']; // Currently logged in username
+// Query the user ID of the current username
 $stmt = $conn->prepare("SELECT id FROM users WHERE username=?");
 $stmt->bind_param("s", $current_username);
 $stmt->execute();
 $result = $stmt->get_result();
-// 获取用户 ID
+// Get the user ID
 $user_data = $result->fetch_assoc();
-$user_id = $user_data['id'] ?? 'N/A'; // 如果没有找到，默认显示 'N/A'
+$user_id = $user_data['id'] ?? 'N/A'; // defaults to 'N/A' if not found
 $stmt->close();
 
 // DO NOT CHANGE ANYTHING ABOVE THIS LINE! DO NOT CHANGE ANYTHING ABOVE THIS LINE! DO NOT CHANGE ANYTHING ABOVE THIS LINE! DO NOT CHANGE ANYTHING ABOVE THIS LINE!

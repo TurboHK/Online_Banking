@@ -3,37 +3,37 @@ session_start();
 include 'db_user_connection.php';
 
 if (!isset($_SESSION['username'])) {
-    header("Location: index.html"); // 如果没有登录则跳转到登录页面
+    header("Location: index.html"); // If you are not logged in, go to the login page.
     exit();
 }
 
 //Start timing
 $start_time = microtime(true);
 
-// 处理更改邮箱请求
+// Processing change mailbox requests
 if (isset($_POST['update_email'])) {
-    $current_email = $_POST['current_email'];  // 当前的用户名（邮箱）
-    $new_email = $_POST['new_email'];  // 新的邮箱（用户名）
-    $current_username = $_SESSION['username']; // 当前登录的用户名
+    $current_email = $_POST['current_email'];  // Current username (e-mail)
+    $new_email = $_POST['new_email'];  // new e-mail (username)
+    $current_username = $_SESSION['username']; // Currently logged in username
 
-    // 验证原有邮箱（即原用户名）是否正确
+    // Verify that the original email address (i.e. original username) is correct
     $stmt = $conn->prepare("SELECT username FROM users WHERE username=?");
     $stmt->bind_param("s", $current_username);
     $stmt->execute();
     $result = $stmt->get_result();
     $user_data = $result->fetch_assoc();
 
-    // 如果用户输入的原有邮箱（用户名）与数据库中的用户名匹配，则允许更新
+    // Allow the update if the original email address (username) entered by the user matches the username in the database
     if ($user_data && $user_data['username'] === $current_email) {
-        // 更新数据库中的邮箱（即用户名）
+        // Update mailboxes (i.e. usernames) in the database
         $stmt = $conn->prepare("UPDATE users SET username=? WHERE username=?");
         $stmt->bind_param("ss", $new_email, $current_username);
 
         if ($stmt->execute()) {
-            // 更新成功后销毁会话并跳转到登录页面
-            session_destroy(); // 销毁当前会话
+            // Destroy the session and jump to the login page after a successful update.
+            session_destroy(); // Destroy the current session
             echo "<script>alert('Email (Username) updated successfully. You have been logged out. Please log in again.'); window.location.href='index.html';</script>";
-            exit();  // 确保跳转后终止脚本执行
+            exit();  // Ensure script execution is terminated after the jump
         } else {
             echo "<script>alert('An error occurred while updating the email (username).');</script>";
         }
