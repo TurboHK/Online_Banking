@@ -1,5 +1,4 @@
 # Online Banking
-
 **HKUST**: COMP 3311 Project
 
 **HKBU**: COMP 4035 Project
