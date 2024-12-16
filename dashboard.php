@@ -138,6 +138,10 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
                 <a href="./transfer.php" class="quick-link-links"><span>Transfer</span></a>
             </div>
             <div class="link">
+                <img src="./assets/icons/annuities.png"/>
+                <a href="./time_deposit.php" class="quick-link-links"><span>Time Deposit</span></a>
+            </div>
+            <div class="link">
                 <img src="./assets/icons/foreign-exchange.png"/>
                 <a href="./foreign_exchange_management.php" class="quick-link-links"><span>Foreign Exchange</span></a>
             </div>
