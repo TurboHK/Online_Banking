@@ -154,7 +154,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
 
     <footer class="footer">
         <?php if ($execution_time): ?>
-            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server. </p>
         <?php endif; ?>
         ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>

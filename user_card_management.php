@@ -9,13 +9,35 @@ if (!isset($_SESSION['username'])) {
 
 $current_username = $_SESSION['username'];
 
-//Start timing
+// Start timing
 $start_time = microtime(true);
 
-//End timing
+// Query to fetch current user's cards
+$stmt = $conn->prepare("
+    SELECT cards.card_number, cards.card_type, cards.blocked 
+    FROM cards
+    INNER JOIN users ON cards.cardholder_id = users.id
+    WHERE users.username = ?
+");
+$stmt->bind_param("s", $current_username);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$user_cards = [];
+while ($row = $result->fetch_assoc()) {
+    $user_cards[] = [
+        'cardNumber' => $row['card_number'],
+        'type' => $row['card_type'] === 'credit' ? 'Credit Card' : 'Debit Card',
+        'detailsPage' => $row['card_type'] === 'credit' ? "credit_card_details.php?card={$row['card_number']}" : "debit_card_details.php?card={$row['card_number']}"
+    ];
+}
+$stmt->close();
+
+// End timing
 $end_time = microtime(true);
-$execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milliseconds
+$execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -43,11 +65,6 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
 
     <div class="container" style="margin-top: 150px;">
 
-        <!-- Search Box -->
-        <div class="search-container">
-            <input type="text" id="searchBox" placeholder="Search by card number..." oninput="filterBySearch()">
-        </div>
-
         <!-- Filter Buttons -->
         <div class="filter-buttons">
             <button onclick="filterCards('all')">Show All</button>
@@ -74,11 +91,8 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
     </footer>
 
     <script>
-        // Example data fetched from backend
-        const userCards = [
-            { cardNumber: '1234 5678 9876 5432', type: 'Credit Card', detailsPage: 'credit_card_details.php?card=1234' },
-            { cardNumber: '1111 2222 3333 4444', type: 'Debit Card', detailsPage: 'debit_card_details.php' },
-        ];
+        // Dynamically load cards from PHP
+        const userCards = <?php echo json_encode($user_cards); ?>;
 
         // Function to load and filter cards
         function filterCards(filter) {
@@ -117,6 +131,9 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
         // Load all cards on page load
         window.onload = () => filterCards('all');
     </script>
+</body>
+</html>
+
 
 <style>
     .container {
@@ -193,5 +210,3 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
     }
 
 </style>
-</body>
-</html>

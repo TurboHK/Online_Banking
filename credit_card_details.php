@@ -3,39 +3,90 @@ session_start();
 include 'db_connection.php';
 
 if (!isset($_SESSION['username'])) {
-    header("Location: index.html");
+    header("Location: index.html"); // If not logged in, redirect to login page.
     exit();
 }
 
-$cardNumber = $_GET['card'] ?? null;
+$current_username = $_SESSION['username']; // Currently logged-in username
 
-if (!$cardNumber) {
-    echo "Invalid card number.";
+// Handle POST request to freeze or unlock the card
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['card_number'])) {
+    $action = $_POST['action'];
+    $card_number = $_POST['card_number'];
+
+    // Validate action
+    if (!in_array($action, ['freeze', 'unlock'])) {
+        $error_message = "Invalid action.";
+    } else {
+        // Check if the card belongs to the logged-in user
+        $stmt = $conn->prepare("
+            SELECT cards.id, cards.blocked
+            FROM cards
+            INNER JOIN users ON cards.cardholder_id = users.id
+            WHERE cards.card_number = ? AND users.username = ?
+        ");
+        $stmt->bind_param("ss", $card_number, $current_username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $card_data = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$card_data) {
+            $error_message = "Card not found or access denied.";
+        } else {
+            // Update card's blocked status
+            $new_blocked_status = ($action === 'freeze') ? 1 : 0;
+            $stmt = $conn->prepare("UPDATE cards SET blocked = ? WHERE card_number = ?");
+            $stmt->bind_param("is", $new_blocked_status, $card_number);
+            if ($stmt->execute()) {
+                $success_message = "Card status updated successfully.";
+            } else {
+                $error_message = "Failed to update card status.";
+            }
+            $stmt->close();
+        }
+    }
+}
+
+// Get the card number from the query string
+$card_number = isset($_GET['card']) ? $_GET['card'] : null;
+
+if (!$card_number) {
+    header("Location: 404.php"); // If no card number is provided, redirect to 404 page.
     exit();
 }
 
 // Start timing
 $start_time = microtime(true);
 
-// Check credit card details
-
-$stmt = $conn->prepare("SELECT * FROM credit_cards WHERE card_number=?");
-$stmt->bind_param("s", $cardNumber);
+// Query to check if the credit card exists and belongs to the current user
+$stmt = $conn->prepare("
+    SELECT creditcards.*, cards.card_number, cards.blocked, users.username
+    FROM creditcards
+    INNER JOIN cards ON creditcards.id = cards.id
+    INNER JOIN users ON cards.cardholder_id = users.id
+    WHERE cards.card_number = ? AND users.username = ?
+");
+$stmt->bind_param("ss", $card_number, $current_username);
 $stmt->execute();
 $result = $stmt->get_result();
-$cardData = $result->fetch_assoc();
 
-if (!$cardData) {
-    echo "Card details not found.";
+// Fetch card details
+$card_data = $result->fetch_assoc();
+$stmt->close();
+
+// If no card is found or it does not belong to the current user, redirect to 404
+if (!$card_data) {
+    header("Location: 404.php");
     exit();
 }
-
-$stmt->close();
 
 // End timing
 $end_time = microtime(true);
 $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -45,7 +96,6 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
     <title>Credit Card Details | GBC Internet Banking</title>
-
 </head>
 <body>
     <!-- Header -->
@@ -54,96 +104,154 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
             <div class="header__logo">
                 <a href="./dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>Welcome to GBC Internet Banking</h1>
+            <h1>Credit Card Details</h1>
             <div class="header__right">
                 Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
                 <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
             </div>
-
         </div>
     </header>
     
     <div class="container">
-        <h1>Card Details</h1>
-        <div class="details">
-            <p><strong>Card Number:</strong> <?php echo htmlspecialchars($cardData['card_number']); ?></p>
-            <p><strong>Last Transaction:</strong> <?php echo htmlspecialchars($cardData['last_transaction']); ?></p>
-            <p><strong>Repayment Date:</strong> <?php echo htmlspecialchars($cardData['repayment_date']); ?></p>
-            <p><strong>Credit Limit:</strong> <?php echo htmlspecialchars($cardData['credit_limit']); ?></p>
-            <p><strong>Available Balance:</strong> <?php echo htmlspecialchars($cardData['available_balance']); ?></p>
-        </div>
-
-        <div class="button-group">
-            <button class="freeze-button" onclick="handleCardAction('freeze')">Freeze Card</button>
-            <button class="unlock-button" onclick="handleCardAction('unlock')">Unlock Card</button>
-        </div>
-
-        <div style="text-align: center;">
-            <a href="./user_card_management.html" style="text-decoration: none; color: #007BFF;">Back to Card Management</a>
-        </div>
+    <h1>Credit Card Details</h1>
+    <div class="details">
+        <p><strong>Card Number:</strong> <?php echo htmlspecialchars($card_data['card_number']); ?></p>
+        <p><strong>Last Transaction:</strong> <?php echo htmlspecialchars($card_data['last_transaction'] ?? 'N/A'); ?></p>
+        <p><strong>Repayment Date:</strong> <?php echo htmlspecialchars($card_data['repayment_date'] ?? 'N/A'); ?></p>
+        <p><strong>Credit Limit:</strong> <?php echo number_format($card_data['quota'], 2); ?> HKD</p>
+        <p><strong>Available Balance:</strong> <?php echo number_format($card_data['remaining_quota'], 2); ?> HKD</p>
+        <p><strong>Card Status:</strong> <?php echo $card_data['blocked'] == 0 ? 'Active' : 'Frozen'; ?></p>
     </div>
+
+    <!-- Display messages -->
+    <?php if (isset($success_message)): ?>
+        <p style="color: green;"><?php echo $success_message; ?></p>
+    <?php elseif (isset($error_message)): ?>
+        <p style="color: red;"><?php echo $error_message; ?></p>
+    <?php endif; ?>
+
+    <div class="button-group">
+        <!-- Freeze button -->
+        <form method="POST" style="display: inline;">
+            <input type="hidden" name="card_number" value="<?php echo htmlspecialchars($card_data['card_number']); ?>">
+            <input type="hidden" name="action" value="freeze">
+            <button 
+                class="freeze-button" 
+                <?php echo $card_data['blocked'] == 1 ? 'disabled' : ''; ?>
+                onmouseover="handleMouseOver(this, <?php echo $card_data['blocked'] == 1 ? 'true' : 'false'; ?>)"
+                onmouseout="handleMouseOut(this)"
+            >
+                Freeze Card
+            </button>
+        </form>
+
+        <!-- Unlock button -->
+        <form method="POST" style="display: inline;">
+            <input type="hidden" name="card_number" value="<?php echo htmlspecialchars($card_data['card_number']); ?>">
+            <input type="hidden" name="action" value="unlock">
+            <button 
+                class="unlock-button" 
+                <?php echo $card_data['blocked'] == 0 ? 'disabled' : ''; ?>
+                onmouseover="handleMouseOver(this, <?php echo $card_data['blocked'] == 0 ? 'true' : 'false'; ?>)"
+                onmouseout="handleMouseOut(this)"
+            >
+                Unlock Card
+            </button>
+        </form>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="./user_card_management.php" style="text-decoration: none; color: #007BFF;">Back to Card Management</a>
+    </div>
+</div>
 
     <footer class="footer">
         <?php if ($execution_time): ?>
-            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.
         <?php endif; ?>
         ©2024 Global Banking Corporation Limited. All rights reserved.
     </footer>
 
     <script>
         function handleCardAction(action) {
-            const cardNumber = "<?php echo htmlspecialchars($cardData['card_number']); ?>";
+            const cardNumber = "<?php echo htmlspecialchars($card_data['card_number']); ?>";
             const confirmation = confirm(`Are you sure you want to ${action} the card ending in ${cardNumber.slice(-4)}?`);
             if (confirmation) {
                 alert(`Card ending in ${cardNumber.slice(-4)} has been ${action}ed.`);
             }
         }
+
+        function handleMouseOver(button, isDisabled) {
+        if (isDisabled) {
+            button.classList.add('hover-disabled');
+            button.title = "This action is currently disabled";
+        }
+    }
+
+    function handleMouseOut(button) {
+        button.classList.remove('hover-disabled');
+        button.title = "";
+    }
     </script>
 
-<style>
-    .container {
-        max-width: 600px;
-        margin: 50px auto;
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .details {
+            margin: 20px 0;
+        }
+        .details p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-group button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .freeze-button {
+            background-color: #FF4C4C;
+            color: white;
+        }
+        .freeze-button:hover {
+            background-color: #E53935;
+        }
+        .unlock-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .unlock-button:hover {
+            background-color: #388E3C;
+        }
+
+        .freeze-button.hover-disabled,
+    .unlock-button.hover-disabled {
+        background-color: #cccccc !important;
+        cursor: not-allowed !important;
+        color: #666666 !important;
     }
 
-    .details {
-        margin: 20px 0;
-    }
-    .details p {
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    .button-group {
-        text-align: center;
-        margin-top: 20px;
-    }
-    .button-group button {
-        padding: 10px 20px;
-        margin: 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-    }
-    .freeze-button {
-        background-color: #FF4C4C;
-        color: white;
-    }
-    .freeze-button:hover {
+    .freeze-button:hover:not(.hover-disabled) {
         background-color: #E53935;
     }
-    .unlock-button {
-        background-color: #4CAF50;
-        color: white;
-    }
-    .unlock-button:hover {
+
+    .unlock-button:hover:not(.hover-disabled) {
         background-color: #388E3C;
     }
-</style>
-
+    </style>
 </body>
 </html>
