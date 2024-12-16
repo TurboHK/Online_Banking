@@ -159,7 +159,7 @@ if (isset($_POST['delete_user'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
-    <title>Dashboard | GBC Internet Banking</title>
+    <title>Admin Dashboard | GBC Internet Banking</title>
 
     <!-- DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! -->
     <!-- DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! DO NOT CHANGE ANYTHING BELOW THIS LINE! -->

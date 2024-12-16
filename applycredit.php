@@ -104,7 +104,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
-    <title>Apply for Credit | GBC Internet Banking</title>
+    <title>Credit Card Application | GBC Internet Banking</title>
 </head>
 <body>
     <header class="header">
@@ -114,7 +114,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
                     <img src="./assets/logo.png" alt="Bank Logo">
                 </a>
             </div>
-            <h1>Welcome to GBC Internet Banking</h1>
+            <h1>Apply For Credit Cards</h1>
             <div class="header__right">
                 Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
                 <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
@@ -124,7 +124,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
 
     <main class="dashboard">
         <div class="form-container">
-            <h2>Apply For Credit Cards</h2>
+            <h2>Application Form</h2>
             <form method="post" action="">
                 <div class="form-group">
                     <label for="Name">Name:</label>

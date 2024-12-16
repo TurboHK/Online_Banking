@@ -55,7 +55,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
             <div class="header__logo">
                 <a href="./dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>Welcome to GBC Internet Banking</h1>
+            <h1>Cards Overview</h1>
             <div class="header__right">
                 Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
                 <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>

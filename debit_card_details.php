@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db_connection.php';
+include 'db_user_connection.php';
 
 if (!isset($_SESSION['username'])) {
     header("Location: index.html"); // If not logged in, redirect to login page.

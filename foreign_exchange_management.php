@@ -20,7 +20,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Foreign Exchange Management</title>
+    <title>Foreign Exchange</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/dashboard.css" />
@@ -35,7 +35,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
             <div class="header__logo">
                 <a href="./dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>Welcome to GBC Internet Banking</h1>
+            <h1>Foreign Exchange</h1>
             <div class="header__right">
                 Current User: <?php echo htmlspecialchars($_SESSION['username']); ?>
                 <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
@@ -44,11 +44,10 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
     </header>
 
     <div class="container" style="margin-top: 150px;">
-        <h1 id="l">Foreign Exchange Management</h1>
+        <h1 id="l">Currency Exchange</h1>
 
         <!-- Currency Exchange Section -->
         <div id="exchange-section">
-            <h2>Currency Exchange</h2>
             <form id="exchange-form" onsubmit="processExchange(event)">
                 <div class="form-group">
                     <label for="baseCurrency">Base Currency</label>

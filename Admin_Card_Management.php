@@ -73,7 +73,7 @@ if (isset($_POST['clear'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/dashboard.css" />
     <link rel="icon" href="assets/logo.png" type="image/png">
-    <title>Admin Panel | GBC Internet Banking</title>
+    <title>Card Management | GBC Internet Banking</title>
 </head>
 <body>
     <!-- Header -->
@@ -82,7 +82,7 @@ if (isset($_POST['clear'])) {
             <div class="header__logo">
                 <a href="./admin_dashboard.php"><img src="./assets/logo.png" alt="Bank Logo"></a>
             </div>
-            <h1>Welcome to GBC Internet Banking Control Panel</h1>
+            <h1>Card Management</h1>
             <div class="header__right">
                 Current Administrator: <?php echo htmlspecialchars($_SESSION['username']); ?>
                 <button class="logout-button" style="margin-left: 10px;" onclick="window.location.href='logout.php'">Logout</button>
