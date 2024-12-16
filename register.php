@@ -5,10 +5,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // 加密密码
+    // Encrypted passwords
+
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    // 检查用户名是否已存在
+    // Check if the username already exists
     $sql = "SELECT * FROM users WHERE username = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('s', $username);
@@ -18,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($result->num_rows > 0) {
         echo json_encode(['success' => false, 'message' => 'Username already exists']);
     } else {
-        // 插入新用户
+        // Insert new user
         $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('ss', $username, $hashed_password);

@@ -2,19 +2,19 @@
 session_start();
 include 'db_connection.php';
 
-// 验证用户是否登录
+// Verify that the user is logged on
 if (!isset($_SESSION['username'])) {
     header("Location: index.html");
     exit();
 }
 
-// 获取当前登录的用户名
+// Get the currently logged in username
 $username = $_SESSION['username'];
 
 //Start timing
 $start_time = microtime(true); 
 
-// 查询当前用户信息
+// Query current user information
 $user_info = null;
 $stmt = $conn->prepare("SELECT id, name, address ,phone FROM users WHERE username = ?");
 if ($stmt) {
@@ -35,15 +35,15 @@ $user_name = $user_info['name'];
 $user_address = $user_info['address'];
 $user_phone = $user_info['phone'];
 
-// 处理表单提交
+// Processing form submissions
 if (isset($_POST['submit'])) {
     $Name = $_POST['Name'] ?? null;
     $Address = $_POST['Address'] ?? null;
     $Phone = $_POST['Phone'] ?? null;
 
-    // 检查手机号是否为11位
+    // Check if the cell phone number is 11 digits
     
-        // 插入数据到 applycredit 表
+        // Insert data into the applycredit table
         $sql = "INSERT INTO applycredit (status, name, address, phone, user_id) VALUES ('waiting', ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
 
@@ -61,7 +61,7 @@ if (isset($_POST['submit'])) {
     
 }
 
-// 处理撤销申请
+// Processing revocation requests
 if (isset($_POST['cancel'])) {
     $apply_id = $_POST['apply_id'];
 
@@ -81,7 +81,7 @@ if (isset($_POST['cancel'])) {
     }
 }
 
-// 查询当前用户的所有申请记录
+// Query all application records for the current user
 $applications_query = "SELECT apply_id, name, address, phone, status FROM applycredit WHERE user_id = ?";
 $applications_result = null;
 $stmt = $conn->prepare($applications_query);
@@ -165,7 +165,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
                                 <td>{$row['phone']}</td>
                                 <td>{$row['status']}</td>
                                 <td>";
-                        // 检查状态，如果是 "waiting"，显示取消按钮，否则显示 "Complete"
+                        // Check the status, if it's “Waiting”, show the cancel button. Otherwise show “Complete”
                         if ($row['status'] === 'waiting') {
                             echo "<form method='post' action='' style='margin: 0;'>
                                     <input type='hidden' name='apply_id' value='{$row['apply_id']}'>

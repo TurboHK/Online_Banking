@@ -3,23 +3,23 @@ session_start();
 include 'db_user_connection.php';
 
 if (!isset($_SESSION['username'])) {
-    header("Location: index.html"); // 如果没有登录则跳转到登录页面
+    header("Location: index.html"); // If you are not logged in, go to the login page.
     exit();
 }
 
-$current_username = $_SESSION['username']; // 当前登录的用户名
+$current_username = $_SESSION['username']; // Currently logged in username
 
 //Start timing
 $start_time = microtime(true); 
 
-// 获取当前用户的卡片信息
-$stmt = $conn->prepare("SELECT * FROM cards WHERE cardholder_id = (SELECT id FROM users WHERE username = ?)"); // 使用用户的 username 查询用户的卡片信息
+// Get the current user's card information
+$stmt = $conn->prepare("SELECT * FROM cards WHERE cardholder_id = (SELECT id FROM users WHERE username = ?)"); // Use the user's username to query the user's card information.
 $stmt->bind_param("s", $current_username);
 $stmt->execute();
 $result = $stmt->get_result();
 $cards = [];
 while ($row = $result->fetch_assoc()) {
-    $cards[] = $row;  // 将卡片信息存入数组
+    $cards[] = $row;  // Store card information in an array
 }
 $stmt->close();
 
@@ -118,7 +118,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
         <?php foreach ($cards as $card): ?>
             <div class="card-item">
                 <?php 
-                    // 根据卡片类型显示不同的图片
+                    // Display different images based on card type
                     $card_image = ($card['type'] === 'credit') ? './assets/credit.png' : './assets/debit.png'; 
                 ?>
                 <img src="<?php echo $card_image; ?>" alt="Card Icon">

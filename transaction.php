@@ -3,7 +3,7 @@ session_start();
 include 'db_user_connection.php';
 
 if (!isset($_SESSION['username'])) {
-    header("Location: index.html"); // 如果没有登录则跳转到登录页面
+    header("Location: index.html"); // If you are not logged in, go to the login page.
     exit();
 }
 

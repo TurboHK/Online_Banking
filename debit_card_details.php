@@ -17,7 +17,7 @@ if (!$cardNumber) {
 // Start timing
 $start_time = microtime(true);
 
-// 查询储蓄卡详情
+// Check Savings Card Details
 $stmt = $conn->prepare("SELECT * FROM debit_cards WHERE card_number=?");
 $stmt->bind_param("s", $cardNumber);
 $stmt->execute();

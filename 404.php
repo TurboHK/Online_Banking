@@ -1,5 +1,5 @@
 <?php
-// 设置HTTP响应代码为404，表示页面未找到
+// Set the HTTP response code to 404 to indicate that the page was not found
 http_response_code(404);
 ?>
 

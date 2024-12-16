@@ -6,20 +6,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // 查询时加入角色检查
+    // Add role checking to queries
     $sql = "SELECT * FROM users WHERE username = ? AND role = 'admin'";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('s', $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // 检查是否找到用户
+    // Check if the user is found
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        // 验证密码
+        // Verify the password
         if (password_verify($password, $user['password'])) {
             $_SESSION['username'] = $username;
-            $_SESSION['role'] = 'admin'; // 设置用户角色
+            $_SESSION['role'] = 'admin'; // Setting up user roles
             echo json_encode(['success' => true, 'message' => 'Login successful', 'redirect' => 'admin_dashboard.php']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Incorrect password']);

@@ -12,13 +12,14 @@ $current_username = $_SESSION['username'];
 //Start timing
 $start_time = microtime(true);
 
-// 查询用户的全部信息
+// Query all information about the user
+
 $stmt = $conn->prepare("SELECT id, username, name, phone, created_at, address, picture FROM users WHERE username=?");
 $stmt->bind_param("s", $current_username);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// 获取用户数据
+// Get user data
 $user_data = $result->fetch_assoc();
 $user_id = $user_data['id'] ?? 'N/A';
 $username = $user_data['username'] ?? 'N/A';
@@ -31,17 +32,17 @@ $picture = $user_data['picture'] ?? null;
 $stmt->close();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // 获取提交的数据
+    // Get user data
     $name = $_POST['name'] ?? '';
     $address = $_POST['address'] ?? '';
     $phone = $_POST['phone'] ?? '';
 
-    // 更新数据库
+    // Update the database
     $stmt = $conn->prepare("UPDATE users SET name = ?, address = ?, phone = ? WHERE username = ?");
     $stmt->bind_param("ssss", $name, $address, $phone, $current_username);
 
     if ($stmt->execute()) {
-        // 修改成功后，显示提示框并跳转
+        // When the modification is successful, display the alert box and jump to the
         echo '<script>
             alert("Information updated successfully.");
             window.location.href = "profile.php"; // 跳转到 profile.php
@@ -86,7 +87,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
 
     <main class="dashboard">
         <div class="info-container">
-            <!-- 左侧卡片 -->
+
             <section class="account-summary">
                 <h2>Overview</h2>
                 <form action="" method="POST" class="update-form">
@@ -137,30 +138,29 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
     </footer>
 
     <style>
-         /* 使表单居中并设置适当的宽度 */
         .dashboard {
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 垂直方向上让表单靠上 */
-            min-height: 100vh; /* 让页面内容垂直居中 */
+            align-items: flex-start; 
+            min-height: 100vh; 
             background-color: #f7f7f7;
-            padding-top: 50px; /* 给表单顶部留出空隙 */
+            padding-top: 50px;
         }
         
         .info-container {
             width: 100%;
-            max-width: 500px; /* 设置最大宽度为500px，使表单更紧凑 */
+            max-width: 500px;
             padding: 20px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-top: 30px; /* 上移表单 */
+            margin-top: 30px; 
         }
         
         .update-form {
             display: flex;
             flex-direction: column;
-            gap: 15px; /* 每个输入框的间距 */
+            gap: 15px; 
         }
         
         .sub-account label {
@@ -171,13 +171,13 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
         }
         
         .sub-account input {
-            width: 50%; /* 输入框宽度为100% */
-            max-width: 400px; /* 设置输入框的最大宽度为400px */
-            padding: 8px; /* 减少内边距 */
-            font-size: 14px; /* 缩小字体大小 */
+            width: 50%; 
+            max-width: 400px; 
+            padding: 8px; 
+            font-size: 14px; 
             border: 1px solid #ccc;
             border-radius: 5px;
-            margin-bottom: 10px; /* 增加输入框之间的间距 */
+            margin-bottom: 10px; 
         }
         
         .submit-button-container {
