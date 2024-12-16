@@ -2,15 +2,15 @@
 session_start();
 include 'db_connection.php';
 
-// 如果未登录，则重定向到登录页面
+// If not logged in, redirect to login page
 if (!isset($_SESSION['username'])) {
     header("Location: index.html");
     exit();
 }
 
-$current_username = $_SESSION['username']; // 当前登录用户名
+$current_username = $_SESSION['username']; // Current Login User Name
 
-// 检查并设置用户ID
+// Check and set the user ID
 if (!isset($_SESSION['user_id'])) {
     $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->bind_param("s", $current_username);
@@ -26,10 +26,13 @@ if (!isset($_SESSION['user_id'])) {
     }
 }
 
-// 从会话获取用户ID
+// Get user ID from session
 $user_id = $_SESSION['user_id'];
 
-// 获取当前用户的储蓄卡信息
+// Start timing
+$start_time = microtime(true);
+
+// Get the current user's savings card information
 $stmt = $conn->prepare("SELECT debitcards.debitcard_id, debitcards.balance, cards.id as card_id 
                         FROM debitcards
                         INNER JOIN cards ON debitcards.id = cards.id
@@ -54,76 +57,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($account_from) || empty($account_to) || $amount <= 0) {
         $transfer_error = "All fields are required, and amount must be greater than 0.";
+    } elseif ($account_from === $account_to) { // Check if the card numbers are the same
+        $transfer_error = "Sender and recipient account cannot be the same.";
     } else {
-        // 检查目标账户是否存在
-        $stmt = $conn->prepare("SELECT cards.cardholder_id, debitcards.id, debitcards.balance 
+        // Check if the payment card is locked
+        $stmt = $conn->prepare("SELECT debitcards.balance, cards.blocked 
                                 FROM debitcards 
                                 INNER JOIN cards ON debitcards.id = cards.id 
                                 WHERE debitcards.debitcard_id = ?");
-        $stmt->bind_param("s", $account_to);
+        $stmt->bind_param("s", $account_from);
         $stmt->execute();
         $result = $stmt->get_result();
-        $recipient_card = $result->fetch_assoc();
+        $sender_card_data = $result->fetch_assoc();
         $stmt->close();
 
-        if (!$recipient_card) {
-            $transfer_error = "Recipient account not found.";
+        if (!$sender_card_data) {
+            $transfer_error = "Sender account not found.";
+        } elseif ($sender_card_data['blocked'] == 1) { // Check Payment Card Status
+            $transfer_error = "Transfer failed. The sender's account is locked.";
         } else {
-            $sender_card = array_filter($debit_cards, fn($card) => $card['debitcard_id'] == $account_from);
-            $sender_card = reset($sender_card);
+            // Check if the target account exists
+            $stmt = $conn->prepare("SELECT cards.cardholder_id, debitcards.id, debitcards.balance 
+                                    FROM debitcards 
+                                    INNER JOIN cards ON debitcards.id = cards.id 
+                                    WHERE debitcards.debitcard_id = ?");
+            $stmt->bind_param("s", $account_to);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $recipient_card = $result->fetch_assoc();
+            $stmt->close();
 
-            if (!$sender_card || $sender_card['balance'] < $amount) {
-                $transfer_error = "Insufficient balance.";
+            if (!$recipient_card) {
+                $transfer_error = "Recipient account not found.";
             } else {
-                $conn->begin_transaction();
-                try {
-                    // 更新发起人余额
-                    $new_balance_sender = $sender_card['balance'] - $amount;
-                    $stmt = $conn->prepare("UPDATE debitcards SET balance = ? WHERE debitcard_id = ?");
-                    $stmt->bind_param("ds", $new_balance_sender, $account_from);
-                    $stmt->execute();
+                // Continue with the transfer logic
+                $sender_card = array_filter($debit_cards, fn($card) => $card['debitcard_id'] == $account_from);
+                $sender_card = reset($sender_card);
 
-                    // 更新接收人余额
-                    $new_balance_recipient = $recipient_card['balance'] + $amount;
-                    $stmt = $conn->prepare("UPDATE debitcards SET balance = ? WHERE debitcard_id = ?");
-                    $stmt->bind_param("ds", $new_balance_recipient, $account_to);
-                    $stmt->execute();
+                if (!$sender_card || $sender_card['balance'] < $amount) {
+                    $transfer_error = "Insufficient balance.";
+                } else {
+                    $conn->begin_transaction();
+                    try {
+                        // Updating of sponsor balances
+                        $new_balance_sender = $sender_card['balance'] - $amount;
+                        $stmt = $conn->prepare("UPDATE debitcards SET balance = ? WHERE debitcard_id = ?");
+                        $stmt->bind_param("ds", $new_balance_sender, $account_from);
+                        $stmt->execute();
 
-                    // 同步发起人储蓄卡余额到 account 表
-                    $stmt = $conn->prepare("
-                        UPDATE account 
-                        INNER JOIN cards ON account.user_id = cards.cardholder_id 
-                        INNER JOIN debitcards ON debitcards.id = cards.id 
-                        SET account.local_currency_balance = debitcards.balance 
-                        WHERE account.Account_type = 'card' AND debitcards.debitcard_id = ?
-                    ");
-                    $stmt->bind_param("s", $account_from);
-                    $stmt->execute();
+                        // Updating recipient balances
+                        $new_balance_recipient = $recipient_card['balance'] + $amount;
+                        $stmt = $conn->prepare("UPDATE debitcards SET balance = ? WHERE debitcard_id = ?");
+                        $stmt->bind_param("ds", $new_balance_recipient, $account_to);
+                        $stmt->execute();
 
-                    // 同步接收人储蓄卡余额到 account 表
-                    $stmt->bind_param("s", $account_to);
-                    $stmt->execute();
+                        // Synchronize the initiator's savings card balance to the account table
+                        $stmt = $conn->prepare("
+                            UPDATE account 
+                            INNER JOIN cards ON account.user_id = cards.cardholder_id 
+                            INNER JOIN debitcards ON debitcards.id = cards.id 
+                            SET account.local_currency_balance = debitcards.balance 
+                            WHERE account.Account_type = 'card' AND debitcards.debitcard_id = ?
+                        ");
+                        $stmt->bind_param("s", $account_from);
+                        $stmt->execute();
 
-                    // 添加转账记录
-                    $stmt = $conn->prepare("INSERT INTO transfer (payer_id, payee_id) VALUES (?, ?)");
-                    $stmt->bind_param("ii", $_SESSION['user_id'], $recipient_card['cardholder_id']);
-                    $stmt->execute();
+                        // Synchronize the recipient's savings card balance to the account table
+                        $stmt->bind_param("s", $account_to);
+                        $stmt->execute();
 
-                    // 添加交易记录
-                    $stmt = $conn->prepare("INSERT INTO transactions (transaction_type, card_id, amount) VALUES ('transfer', ?, ?)");
-                    $stmt->bind_param("id", $sender_card['card_id'], $amount);
-                    $stmt->execute();
+                        // Adding Transfer Records
+                        $stmt = $conn->prepare("INSERT INTO transfer (payer_id, payee_id) VALUES (?, ?)");
+                        $stmt->bind_param("ii", $_SESSION['user_id'], $recipient_card['cardholder_id']);
+                        $stmt->execute();
 
-                    $conn->commit();
-                    $success_message = "Transfer successful.";
-                } catch (Exception $e) {
-                    $conn->rollback();
-                    $transfer_error = "Transfer failed. Please try again.";
+                        // Adding Transaction Records
+                        $stmt = $conn->prepare("INSERT INTO transactions (transaction_type, card_id, amount) VALUES ('transfer', ?, ?)");
+                        $stmt->bind_param("id", $sender_card['card_id'], $amount);
+                        $stmt->execute();
+
+                        $conn->commit();
+                        $success_message = "Transfer successful.";
+                    } catch (Exception $e) {
+                        $conn->rollback();
+                        $transfer_error = "Transfer failed. Please try again.";
+                    }
                 }
             }
         }
     }
 }
+
+// End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
 ?>
 
 
@@ -197,6 +224,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <?php if ($execution_time): ?>
+            It took <?php echo $execution_time; ?> milliseconds to get data from the server.</p>
+        <?php endif; ?>
+        ©2024 Global Banking Corporation Limited. All rights reserved.
+    </footer>
 
 <script>
 function updateBalance() {
