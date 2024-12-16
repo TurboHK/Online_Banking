@@ -37,8 +37,8 @@ if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
             // If status is WAITING, the REFUSE and SUCCESS buttons are displayed.
             if ($applycredit['status'] == 'waiting') {
                 $actions = "<form method='POST' id='form_" . $applycredit['apply_id'] . "'>
-                    <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Refuse</button>
-                    <button type='button' onclick='confirmAction(\"success\", " . $applycredit['apply_id'] . ")'>Success</button>
+                    <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Reject</button>
+                    <button type='button' onclick='confirmAction(\"success\", " . $applycredit['apply_id'] . ")'>Approve</button>
                 </form>";
             } else {
                 $actions = "<span>Complete</span>";
@@ -84,8 +84,8 @@ if (isset($_POST['search_user']) && !empty($_POST['user_id'])) {
             // If status is WAITING, the REFUSE and SUCCESS buttons are displayed.
             if ($applycredit['status'] == 'waiting') {
                 $actions = "<form method='POST' id='form_" . $applycredit['apply_id'] . "'>
-                    <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Refuse</button>
-                    <button type='button' onclick='confirmAction(\"success\", " . $applycredit['apply_id'] . ")'>Success</button>
+                    <button type='button' onclick='confirmAction(\"refuse\", " . $applycredit['apply_id'] . ")'>Reject</button>
+                    <button type='button' onclick='confirmAction(\"success\", " . $applycredit['apply_id'] . ")'>Approve</button>
                 </form>";
             } else {
                 $actions = "<span>Complete</span>";
@@ -124,6 +124,22 @@ if (isset($_POST['refuse'])) {
     exit();
 }
 
+// Synchronize card numbers logic
+if (isset($_POST['synchronize'])) {
+    $stmt = $conn->prepare("
+        UPDATE cards 
+        INNER JOIN creditcards ON cards.id = creditcards.id 
+        SET cards.card_number = creditcards.creditcard_id
+        WHERE cards.card_number IS NULL
+    ");
+    if ($stmt->execute()) {
+        $sync_message = "Card numbers synchronized successfully.";
+    } else {
+        $sync_message = "Failed to synchronize card numbers.";
+    }
+    $stmt->close();
+}
+
 // Processing Successful Operations
 if (isset($_POST['success'])) {
     $apply_id = $_POST['success'];
@@ -132,31 +148,32 @@ if (isset($_POST['success'])) {
     $stmt = $conn->prepare("UPDATE applycredit SET status = 'success' WHERE apply_id = ?");
     $stmt->bind_param("i", $apply_id);
     $stmt->execute();
-    
+
     // Get information about this application
     $stmt = $conn->prepare("SELECT * FROM applycredit WHERE apply_id = ?");
     $stmt->bind_param("i", $apply_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $applycredit = $result->fetch_assoc();
-    
-    // Insert a new record in the creditcards table
-    $stmt = $conn->prepare("INSERT INTO creditcards (quota, remaining_quota, repayment_date, apply_id) VALUES (?, ?, ?, ?)");
-    $quota = 50000;
-    $remaining_quota = 50000;
-    $repayment_date = date("Y-m-d", strtotime("+30 days"));  // Assuming a repayment date of 30 days from now
-    $stmt->bind_param("iisi", $quota, $remaining_quota, $repayment_date, $apply_id);
-    $stmt->execute();
     $stmt->close();
 
-    // Get the creditcard_id that was just inserted.
-    $creditcard_id = $conn->insert_id;
+    if ($applycredit) {
+        // Step 1: Insert a new record in the cards table
+        $stmt = $conn->prepare("INSERT INTO cards (card_type, card_number, cardholder_id, type, blocked) VALUES ('credit', NULL, ?, 'credit', 0)");
+        $stmt->bind_param("i", $applycredit['user_id']);
+        $stmt->execute();
+        $card_id = $conn->insert_id; // Get the inserted card's ID
+        $stmt->close();
 
-    // Insert a new record in the cards table
-    $stmt = $conn->prepare("INSERT INTO cards (cardholder_id, card_number, type, blocked) VALUES (?, ?, 'credit', 0)");
-    $stmt->bind_param("ii", $applycredit['user_id'], $creditcard_id); // Using creditcard_id as card_number
-    $stmt->execute();
-    $stmt->close();
+        // Step 2: Insert a new record in the creditcards table
+        $stmt = $conn->prepare("INSERT INTO creditcards (id, application_id, quota, remaining_quota, repayment_date) VALUES (?, ?, ?, ?, ?)");
+        $quota = 50000; // Initial credit limit
+        $remaining_quota = 50000; // Remaining quota
+        $repayment_date = date("Y-m-d", strtotime("+30 days")); // Repayment date: 30 days from today
+        $stmt->bind_param("iiids", $card_id, $apply_id, $quota, $remaining_quota, $repayment_date);
+        $stmt->execute();
+        $stmt->close();
+    }
 
     // Refresh the page to reflect the update
     header("Location: Application_Management.php");
@@ -170,6 +187,7 @@ if (isset($_POST['clear'])) {
 }
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -220,10 +238,18 @@ if (isset($_POST['clear'])) {
                 ?>
             </div>
         </section>
+        <p style="text-align: center; color: red;">Warning: Please press the button below to synchronize data after approving or rejecting any request!</p>
+
+        <!-- Synchronize Button -->
+        <div style="text-align: center; margin-top: 20px;">
+            <form method="post" action="">
+                <input type="submit" name="synchronize" value="Synchronize Card Numbers" style="padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            </form>
+        </div>
 
         <!-- Return to Admin Panel -->
         <div class="back-link">
-            <p><a href="javascript:history.back()">Return to the previous page</a></p>
+            <p><a href="./admin_dashboard.php">Return to the dashboard</a></p>
         </div>
     </main>
 
