@@ -120,6 +120,10 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
         <button onclick="window.location.href='Change_Password.php'">Change My Password</button>
     </div>
 
+    <div class="back-link">
+            <p><a href="javascript:history.back()">Return to the previous page</a></p>
+    </div>
+
     </main>
 
     <footer class="footer">
@@ -199,4 +203,14 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); //Convert to milli
             background-color: #0a254a; /* Button Hover Effect */
         }
         
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            text-decoration: none;
+            color: #0064d2;
+        }
+
     </style>

@@ -29,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $conn->close();
         header("Location: profile.php"); // Redirect to personal information page after successful upload
         exit();
-    } else {
+    }
+    else {
         echo "Error: Please upload a valid image file.";
     }
 }

@@ -89,7 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!$recipient_card) {
                 $transfer_error = "Recipient account not found.";
-            } else {
+            }
+            else {
                 // Continue with the transfer logic
                 $sender_card = array_filter($debit_cards, fn($card) => $card['debitcard_id'] == $account_from);
                 $sender_card = reset($sender_card);
