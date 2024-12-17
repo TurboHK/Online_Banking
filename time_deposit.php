@@ -3,131 +3,135 @@ session_start();
 include 'db_user_connection.php';
 
 if (!isset($_SESSION['username'])) {
-    header("Location: index.html"); // Redirect to login page if not logged in
+    header("Location: index.html");
     exit();
 }
 
 $current_username = $_SESSION['username'];
-// Start timing
-$start_time = microtime(true);
+$user_id = $_SESSION['user_id'] ?? null;
 
-// Pagination logic for listing time deposits
+// Fetch or set user ID in the session
+if (!$user_id) {
+    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt->bind_param("s", $current_username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    if ($user) {
+        $_SESSION['user_id'] = $user['id'];
+        $user_id = $user['id'];
+    } else {
+        die("User not found. Please log in again.");
+    }
+}
+
+// Fetch user's debit cards
+$stmt = $conn->prepare("SELECT debitcards.debitcard_id, debitcards.balance, cards.id as card_id 
+                        FROM debitcards
+                        INNER JOIN cards ON debitcards.id = cards.id
+                        WHERE cards.cardholder_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$debit_cards = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+// Fetch available time deposits with pagination
 $records_per_page = 10;
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $records_per_page;
 
-// Fetch all available time deposit options
-$deposits = [];
 $stmt = $conn->prepare("SELECT * FROM local_currency_time_deposits LIMIT ?, ?");
 $stmt->bind_param("ii", $offset, $records_per_page);
 $stmt->execute();
-$result = $stmt->get_result();
+$deposits = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
-while ($row = $result->fetch_assoc()) {
-    $deposits[] = $row;
-}
-
-// Fetch total time deposit count for pagination
 $count_stmt = $conn->prepare("SELECT COUNT(*) AS total FROM local_currency_time_deposits");
 $count_stmt->execute();
-$count_result = $count_stmt->get_result();
-$total_deposits = $count_result->fetch_assoc()['total'];
+$total_deposits = $count_stmt->get_result()->fetch_assoc()['total'];
 $count_stmt->close();
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_deposit'])) {
-    $debitcard_id = trim($_POST['debitcard_id']); // Trim to remove whitespace
-    $deposit_id = trim($_POST['deposit_id']);
+    $debitcard_id = $_POST['account_from'] ?? '';
+    $deposit_id = $_POST['deposit_id'] ?? '';
 
-    // Validate input data
-    if (empty($deposit_id) || !ctype_digit($deposit_id)) {
+    // Input validation
+    if (!ctype_digit($debitcard_id) || strlen($debitcard_id) != 16) {
+        echo "<script>alert('Invalid Debit Card ID. Please select a valid card.');</script>";
+        exit();
+    }
+
+    if (!ctype_digit($deposit_id)) {
         echo "<script>alert('Invalid Deposit ID. Please enter a valid number.');</script>";
         exit();
     }
-    if (empty($debitcard_id) || !ctype_digit($debitcard_id) || strlen($debitcard_id) != 16) {
-        echo "<script>alert('Invalid Debit Card ID. Please enter a valid 16-digit number.');</script>";
-        exit();
-    }
 
-    $deposit_id = (int)$deposit_id;
-    $debitcard_id = (int)$debitcard_id;
-
-    // Get the amount from the selected time deposit
-    $stmt = $conn->prepare("SELECT amount FROM local_currency_time_deposits WHERE id = ?");
+    // Fetch deposit details
+    $stmt = $conn->prepare("SELECT amount, maturity FROM local_currency_time_deposits WHERE id = ?");
     $stmt->bind_param("i", $deposit_id);
     $stmt->execute();
     $deposit_result = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
     if (!$deposit_result) {
-        echo "<script>alert('Deposit ID not found. Please check and try again.');</script>";
+        echo "<script>alert('Deposit ID not found.');window.location.href = 'time_deposit.php';</script>";
         exit();
     }
 
     $deposit_amount = $deposit_result['amount'];
+    $maturity_days = $deposit_result['maturity'];
 
-    // Check if debit card has sufficient balance
-    $balance_stmt = $conn->prepare("SELECT balance FROM debitcards WHERE debitcard_id = ?");
-    $balance_stmt->bind_param("d", $debitcard_id); // Using double (d) for BIGINT
-    $balance_stmt->execute();
-    $balance_result = $balance_stmt->get_result()->fetch_assoc();
-    $balance_stmt->close();
+    // Calculate maturity date by adding maturity days to the current date
+    $maturity_date = date('Y-m-d', strtotime("+$maturity_days days"));
+
+    // Check card balance
+    $stmt = $conn->prepare("SELECT balance FROM debitcards WHERE debitcard_id = ?");
+    $stmt->bind_param("d", $debitcard_id);
+    $stmt->execute();
+    $balance_result = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
     if (!$balance_result) {
-        echo "<script>alert('Debit Card ID not found. Please check and try again.');</script>";
+        echo "<script>alert('Card not found. Please select a valid card.');window.location.href = 'time_deposit.php';</script>";
         exit();
     }
 
     $balance = $balance_result['balance'];
 
     if ($balance >= $deposit_amount) {
-        // Start transaction to ensure atomicity
+        // Start transaction
         $conn->begin_transaction();
-        
         try {
-            // Update balance by deducting the deposit amount
             $new_balance = $balance - $deposit_amount;
-            $update_balance_stmt = $conn->prepare("UPDATE debitcards SET balance = ? WHERE debitcard_id = ?");
-            $update_balance_stmt->bind_param("di", $new_balance, $debitcard_id);
-            $update_balance_stmt->execute();
-            $update_balance_stmt->close();
 
-            // Get the user ID based on the current session's username
-            $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
-            $stmt->bind_param("s", $current_username);
+            // Update debit card balance
+            $stmt = $conn->prepare("UPDATE debitcards SET balance = ? WHERE debitcard_id = ?");
+            $stmt->bind_param("di", $new_balance, $debitcard_id);
             $stmt->execute();
-            $user_result = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
-            if (!$user_result) {
-                echo "<script>alert('User not found. Please try again later.');</script>";
-                exit();
-            }
+            // Insert into user_time_deposits with dynamic maturity_date
+            $stmt = $conn->prepare("INSERT INTO user_time_deposits (user_id, deposit_id, deposit_amount, deposit_date, maturity_date)
+                                    VALUES (?, ?, ?, NOW(), ?)");
+            $stmt->bind_param("iiis", $user_id, $deposit_id, $deposit_amount, $maturity_date);
+            $stmt->execute();
+            $stmt->close();
 
-            $user_id = $user_result['id'];
-
-            // Insert into user_time_deposits table
-            $insert_stmt = $conn->prepare("INSERT INTO user_time_deposits (user_id, deposit_id, deposit_amount, deposit_date, maturity_date) VALUES (?, ?, ?, NOW(), ADDDATE(NOW(), INTERVAL 1 YEAR))");
-            $insert_stmt->bind_param("iii", $user_id, $deposit_id, $deposit_amount);
-            $insert_stmt->execute();
-            $insert_stmt->close();
-
-            // Commit the transaction
             $conn->commit();
-
-            echo "<script>alert('Deposit successful.'); window.location.href = 'local_currency_time_deposits.php';</script>";
+            echo "<script>alert('Deposit successful!'); window.location.href = 'time_deposit.php';</script>";
         } catch (Exception $e) {
-            // Rollback transaction in case of error
             $conn->rollback();
-            echo "<script>alert('An error occurred while processing the deposit. Please try again.');</script>";
+            echo "<script>alert('Transaction failed. Please try again.');window.location.href = 'time_deposit.php';</script>";
         }
     } else {
-        echo "<script>alert('Insufficient balance in the debit card. Current balance: " . number_format($balance, 2) . " HKD.');</script>";
+        echo "<script>alert('Insufficient balance. Current balance: " . number_format($balance, 2) . " HKD');window.location.href = 'time_deposit.php';</script>";
     }
 }
-
-// End timing
-$end_time = microtime(true);
-$execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -256,8 +260,17 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
         <div class="input-section">
         <form id="deposit-form" method="POST" action="">
     <div class="input-section">
-    <label for="debitcard_id">Please enter card number:</label>
-<input type="number" id="debitcard_id" name="debitcard_id" required>
+    <div class="sub-account">
+                        <label for="account_from">From</label>
+                        <select id="account_from" name="account_from" required onchange="updateBalance()">
+                            <option value="" disabled selected>Select Account</option>
+                            <?php foreach ($debit_cards as $card): ?>
+                                <option value="<?php echo $card['debitcard_id']; ?>" data-balance="<?php echo $card['balance']; ?>">
+                                    <?php echo $card['debitcard_id']; ?> - <?php echo number_format($card['balance'], 2); ?> HKD available
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
 <label for="deposit_id">Please enter deposit ID:</label>
 <input type="number" id="deposit_id" name="deposit_id" required>
@@ -284,7 +297,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
                     <tr>
                         <td><?php echo htmlspecialchars($deposit['id']); ?></td>
                         <td><?php echo htmlspecialchars($deposit['interest_rate']); ?>%</td>
-                        <td><?php echo htmlspecialchars($deposit['maturity']); ?> months</td>
+                        <td><?php echo htmlspecialchars($deposit['maturity']); ?> days</td>
                         <td><?php echo htmlspecialchars(number_format($deposit['amount'], 2)); ?> HKD</td>
                     </tr>
                 <?php endforeach; ?>
