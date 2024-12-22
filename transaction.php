@@ -95,6 +95,7 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
                 <label><input type="checkbox" name="transaction_type[]" value="exchange_t" <?php echo in_array('exchange_t', $filter_types) ? 'checked' : ''; ?>> Exchange</label>
                 <label><input type="checkbox" name="transaction_type[]" value="swipe_t" <?php echo in_array('swipe_t', $filter_types) ? 'checked' : ''; ?>> Swipe</label>
                 <label><input type="checkbox" name="transaction_type[]" value="transfer" <?php echo in_array('transfer', $filter_types) ? 'checked' : ''; ?>> Transfer</label>
+                <label><input type="checkbox" name="transaction_type[]" value="time_deposit" <?php echo in_array('time_deposit', $filter_types) ? 'checked' : ''; ?>> Time Deposit</label>
                 <label><input type="checkbox" name="transaction_type[]" value="local_currency_cash_deposit" <?php echo in_array('local_currency_cash_deposit', $filter_types) ? 'checked' : ''; ?>> Local Deposit</label>
                 <label><input type="checkbox" name="transaction_type[]" value="local_currency_cash_withdrawal" <?php echo in_array('local_currency_cash_withdrawal', $filter_types) ? 'checked' : ''; ?>> Local Withdrawal</label>
                 <button type="submit">Apply Filter</button>

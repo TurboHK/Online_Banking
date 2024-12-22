@@ -10,6 +10,9 @@ if (!isset($_SESSION['username'])) {
 $current_username = $_SESSION['username'];
 $user_id = $_SESSION['user_id'] ?? null;
 
+// Start timing
+$start_time = microtime(true);
+
 // Fetch or set user ID in the session
 if (!$user_id) {
     $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
@@ -27,7 +30,7 @@ if (!$user_id) {
 }
 
 // Fetch user's debit cards
-$stmt = $conn->prepare("SELECT debitcards.debitcard_id, debitcards.balance, cards.id as card_id 
+$stmt = $conn->prepare("SELECT debitcards.debitcard_id, debitcards.balance, cards.id as card_id, cards.blocked
                         FROM debitcards
                         INNER JOIN cards ON debitcards.id = cards.id
                         WHERE cards.cardholder_id = ?");
@@ -88,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_deposit'])) {
     $maturity_date = date('Y-m-d', strtotime("+$maturity_days days"));
 
     // Check card balance
-    $stmt = $conn->prepare("SELECT balance FROM debitcards WHERE debitcard_id = ?");
+    $stmt = $conn->prepare("SELECT balance, blocked FROM debitcards JOIN cards ON debitcards.id=cards.id WHERE debitcards.debitcard_id = ?");
     $stmt->bind_param("d", $debitcard_id);
     $stmt->execute();
     $balance_result = $stmt->get_result()->fetch_assoc();
@@ -100,12 +103,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_deposit'])) {
     }
 
     $balance = $balance_result['balance'];
+    $blocked = $balance_result['blocked'];
+
+    // Check if the card is blocked
+    if ($blocked == 1) {
+        echo "<script>alert('This card is blocked and cannot be used for deposits.');window.location.href = 'time_deposit.php';</script>";
+        exit();
+    }
 
     if ($balance >= $deposit_amount) {
         // Start transaction
         $conn->begin_transaction();
-        try {
+            // Fetch card_id from debitcards
+            $stmt = $conn->prepare("SELECT id FROM debitcards WHERE debitcard_id = ?");
+            $stmt->bind_param("i", $debitcard_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $card = $result->fetch_assoc();
+            $stmt->close();
+
+            // If card not found, handle error
+            if (!$card) {
+                echo "<script>alert('Debit card not found.'); window.location.href = 'time_deposit.php';</script>";
+                exit();
+            }
+
+            $card_id = $card['id'];
             $new_balance = $balance - $deposit_amount;
+            $debitcard_id = (int)$debitcard_id;
 
             // Update debit card balance
             $stmt = $conn->prepare("UPDATE debitcards SET balance = ? WHERE debitcard_id = ?");
@@ -113,23 +138,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_deposit'])) {
             $stmt->execute();
             $stmt->close();
 
-            // Insert into user_time_deposits with dynamic maturity_date
-            $stmt = $conn->prepare("INSERT INTO user_time_deposits (user_id, deposit_id, deposit_amount, deposit_date, maturity_date)
-                                    VALUES (?, ?, ?, NOW(), ?)");
-            $stmt->bind_param("iiis", $user_id, $deposit_id, $deposit_amount, $maturity_date);
+            // Insert into transactions table
+            $stmt = $conn->prepare("INSERT INTO transactions (transaction_type, card_id, amount) 
+                                    VALUES ('time_deposit', ?, ?)");
+            $stmt->bind_param("ii", $card_id, $deposit_amount);
             $stmt->execute();
             $stmt->close();
 
+            // Commit the transaction
             $conn->commit();
+
+            // Success message
             echo "<script>alert('Deposit successful!'); window.location.href = 'time_deposit.php';</script>";
-        } catch (Exception $e) {
-            $conn->rollback();
-            echo "<script>alert('Transaction failed. Please try again.');window.location.href = 'time_deposit.php';</script>";
-        }
     } else {
-        echo "<script>alert('Insufficient balance. Current balance: " . number_format($balance, 2) . " HKD');window.location.href = 'time_deposit.php';</script>";
+        // Insufficient balance message
+        echo "<script>alert('Insufficient balance. Current balance: " . number_format($balance, 2) . " HKD'); window.location.href = 'time_deposit.php';</script>";
     }
 }
+
+// End timing
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
 ?>
 
 

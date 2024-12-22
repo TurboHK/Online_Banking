@@ -116,7 +116,6 @@ $execution_time = round(($end_time - $start_time) * 1000, 2); // Convert to mill
     <h1>Debit Card Details</h1>
     <div class="details">
         <p><strong>Card Number:</strong> <?php echo htmlspecialchars($card_data['card_number']); ?></p>
-        <p><strong>Last Transaction:</strong> <?php echo htmlspecialchars($card_data['last_transaction'] ?? 'N/A'); ?></p>
         <p><strong>Spending Limit:</strong> <?php echo number_format($card_data['spending_limit'] ?? 0, 2); ?> HKD</p>
         <p><strong>Available Balance:</strong> <?php echo number_format($card_data['balance'], 2); ?> HKD</p>
         <p><strong>Card Status:</strong> <?php echo $card_data['blocked'] == 0 ? 'Active' : 'Frozen'; ?></p>
