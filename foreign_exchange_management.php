@@ -78,6 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->close();
 
                 if ($targetCurrency != "HKD") {
+                    $stmt = $conn->prepare("UPDATE account SET local_currency_balance = local_currency_balance + ? WHERE user_id = ? AND Account_type = 'foreign_exchange'");
+                    $stmt->bind_param("di", $amount, $user_id);
+                    $stmt->execute();
+                    $stmt->close();
                     // Update the exchange transaction table if target currency is not HKD
                     $stmt = $conn->prepare("SELECT amount FROM exchange_transactions WHERE card_id = ? AND currency_type = ?");
                     $stmt->bind_param("is", $card_id, $targetCurrency);
@@ -164,6 +168,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->execute();
                     $stmt->close();
                 } else {
+                    $stmt = $conn->prepare("UPDATE account SET local_currency_balance = local_currency_balance - ? WHERE user_id = ? AND Account_type = 'foreign_exchange'");
+                    $stmt->bind_param("di", $amount, $user_id);
+                    $stmt->execute();
+                    $stmt->close();
                     // Directly add the converted amount to the debit card's balance
                     $stmt = $conn->prepare("UPDATE debitcards SET balance = balance + ? WHERE debitcard_id = ?");
                     $stmt->bind_param("di", $convertedAmount, $account_from);
